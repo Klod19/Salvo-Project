@@ -20,7 +20,6 @@ public class Game {
 
 //    private LocalDate date = LocalDate.now(); this returns the date without hour
     private Date date = new Date(); //this returns date+hours BUT in JSON has on hour less (Greenwich Time)
-//      private LocalDateTime date = LocalDateTime.now();//this one returns the local hour BUT JSON complicated
 
     public Game() {
 

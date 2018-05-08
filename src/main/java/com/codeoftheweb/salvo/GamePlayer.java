@@ -1,5 +1,6 @@
 package com.codeoftheweb.salvo;
 
+import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -8,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.util.Date;
+import java.util.Set;
 
 @Entity
 public class GamePlayer {
@@ -23,6 +25,9 @@ public class GamePlayer {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="game_id")
     private Game game;
+
+    @OneToMany(mappedBy="gamePlayer", fetch=FetchType.EAGER)
+    Set<Ship> ship;
 
     private Date date = new Date();
 
@@ -65,5 +70,17 @@ public class GamePlayer {
         plus_hours = plus_hours*3600;
         this.date = Date.from(date.toInstant().plusSeconds(plus_hours));
     }
+
+    //getter for Ship
+    public Set<Ship> getShip() {
+        return ship;
+    }
+
+    //method to add a ship
+//    public void addShip(Ship s){
+//        this.s = s;
+//
+//    }
+
 
 }
