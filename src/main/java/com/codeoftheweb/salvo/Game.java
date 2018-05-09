@@ -21,9 +21,7 @@ public class Game {
 //    private LocalDate date = LocalDate.now(); this returns the date without hour
     private Date date = new Date(); //this returns date+hours BUT in JSON has on hour less (Greenwich Time)
 
-    public Game() {
-
-    }
+    public Game() { } //EMPTY CONSTRUCTOR; FOR JACKSON AND TO CREATE A NEW GAME
     //getter of Id
     public long getId() {
         return id;

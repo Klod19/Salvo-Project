@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
@@ -27,7 +28,7 @@ public class GamePlayer {
     private Game game;
 
     @OneToMany(mappedBy="gamePlayer", fetch=FetchType.EAGER)
-    Set<Ship> ship;
+    Set<Ship> ships = new LinkedHashSet<>();
 
     private Date date = new Date();
 
@@ -72,15 +73,15 @@ public class GamePlayer {
     }
 
     //getter for Ship
-    public Set<Ship> getShip() {
-        return ship;
+    public Set<Ship> getShips() {
+        System.out.println(ships);
+        return ships;
     }
 
     //method to add a ship
-//    public void addShip(Ship s){
-//        this.s = s;
-//
-//    }
-
+    public void addShip(Ship s){
+        ships.add(s);
+        s.setGamePlayer(this);
+    }
 
 }

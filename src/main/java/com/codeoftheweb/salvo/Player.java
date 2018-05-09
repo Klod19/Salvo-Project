@@ -34,7 +34,7 @@ public class Player {
     private String userName;
 //    private String userMail;
 
-    public Player() { }
+    public Player() { } //EMPTY CONSTRUCTOR FOR JACKSON
 
     public Player(String userName/*, String userMail*/) {
         this.userName = userName;

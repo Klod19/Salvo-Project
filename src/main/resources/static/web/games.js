@@ -1,14 +1,14 @@
 //this works
-fetch( "/api/games").then(function(response) {
-    console.log('Request succeeded: ' + response.statusText);
-}).catch(function(error) {
-    console.log( "Request failed: " + error.message );
-});
+// fetch( "/api/games").then(function(response) {
+//     console.log('Request succeeded: ' + response.statusText);
+// }).catch(function(error) {
+//     console.log( "Request failed: " + error.message );
+// });
 //this works too
     // $.ajax({url: "/api/games", success: function(result){
 //     //         alert("success!");
 //     //     }});
-// let us use the following
+// let us use the following:
 var allGames=[];
 $.ajax("/api/games").done(function(data) {
     alert("data retrieved!");
@@ -29,8 +29,8 @@ $.ajax("/api/games").done(function(data) {
             listElement.html(date.toLocaleString() + " " + userNames);
             $("#list").append(listElement);
     })
-    // WHY DOESN'T THIS WORK????
-    // var list = allGames[0].map(console.log(game => game.created));
+    // WHY DOESN'T ARROW FUNCTION WORK???? TRY MAP
+    // var list = allGames[0].map(g)
 }).fail(function(){
     alert(data.statusText);
 });

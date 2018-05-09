@@ -70,12 +70,77 @@ public class SalvoApplication {
 			gamePlayerRepository.save(gamePlayer7);
 
 //			//make some ships
-			Ship ship1 = new Ship();
-			Ship ship2 = new Ship();
-//
-//			//save the ships
+			Ship ship1 = new Ship("Carrier");
+			Ship ship2 = new Ship("Battle Ship");
+			Ship ship3 = new Ship("Submarine");
+			Ship ship4 = new Ship("Destroyer");
+			Ship ship5 = new Ship("Patrol Boat");
+			Ship ship6 = new Ship("Carrier");
+			Ship ship7 = new Ship("Battle Ship");
+			Ship ship8 = new Ship("Submarine");
+			Ship ship9 = new Ship("Destroyer");
+			Ship ship10 = new Ship("Patrol Boat");
+
+			//add ships to gamePlayer1:
+			gamePlayer1.addShip(ship1);
+			gamePlayer1.addShip(ship2);
+			gamePlayer1.addShip(ship3);
+			gamePlayer1.addShip(ship4);
+			gamePlayer1.addShip(ship5);
+			gamePlayer1.getShips();
+			//add ships to gamePlayer2
+			gamePlayer2.addShip(ship6);
+			gamePlayer2.addShip(ship7);
+			gamePlayer2.addShip(ship8);
+			gamePlayer2.addShip(ship9);
+			gamePlayer2.addShip(ship10);
+			gamePlayer2.getShips();
+			//see if ships got their gamePlayer
+			ship1.getGamePlayer();
+			ship2.getGamePlayer();
+			//control the type of the ships
+			ship1.getType();
+			ship2.getType();
+			ship3.getType();
+			ship4.getType();
+			ship5.getType();
+			//add and control the locations of the ships for gamePlayer1
+			ship1.addLocation("H5H4H3H2H1");
+			ship1.getLocations();
+			ship2.addLocation("F1F2F3F4");
+			ship2.getLocations();
+			ship3.addLocation("A1A2A3");
+			ship3.getLocations();
+			ship4.addLocation("B1B2B3");
+			ship4.getLocations();
+			ship5.addLocation("C1C2");;
+			ship5.getLocations();
+
+			//add and control the locations of the ships for gameplayer2
+			ship6.addLocation("H5H4H3H2H1");
+			ship6.getLocations();
+			ship7.addLocation("F1F2F3F4");
+			ship7.getLocations();
+			ship8.addLocation("A1A2A3");
+			ship8.getLocations();
+			ship9.addLocation("B1B2B3");
+			ship9.getLocations();
+			ship10.addLocation("C1C2");
+			ship10.getLocations();
+
+			//save the ships
 			shipRepository.save(ship1);
 			shipRepository.save(ship2);
+			shipRepository.save(ship3);
+			shipRepository.save(ship4);
+			shipRepository.save(ship5);
+			shipRepository.save(ship6);
+			shipRepository.save(ship7);
+			shipRepository.save(ship8);
+			shipRepository.save(ship9);
+			shipRepository.save(ship10);
+			System.out.println(ship1.getGamePlayer().getPlayer());
+			System.out.println(ship6.getGamePlayer().getPlayer());
 
 		};
 	}
