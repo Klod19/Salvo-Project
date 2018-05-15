@@ -1,0 +1,14 @@
+th{
+    width:50px !important;
+    height:50px !important;
+    border:2px solid green;
+    text-align:center;
+}
+
+td{
+    width:50px !important;
+    height:50px !important;
+    border:2px solid green;
+    text-align:center;
+    font-weight: bold;
+}
