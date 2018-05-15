@@ -39,6 +39,8 @@ public class SalvoApplication {
 			Game game3 = new Game();
 			Game game4 = new Game();
 			//change the creation date of the games
+			game1.getDate();
+			//the following line returns the same date as the one above
 			game2.setDate(1);
 			game3.setDate(2);
 			game4.setDate(3);

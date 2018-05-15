@@ -62,7 +62,7 @@ public class Ship {
         this.type = type;
     }
 
-    //method to add the location; see
+    //method to add the location; see:
     // https://stackoverflow.com/questions/3760152/split-string-to-equal-length-substrings-in-java
     public void addLocation(String coordinates){
         //split the string "coordinates" using a regular expression;

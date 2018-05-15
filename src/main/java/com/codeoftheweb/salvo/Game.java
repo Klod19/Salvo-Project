@@ -2,6 +2,7 @@ package com.codeoftheweb.salvo;
 
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Set;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +27,8 @@ public class Game {
     public long getId() {
         return id;
     }
+
+
 
     public Set<GamePlayer> getGamePlayers() {
         return gamePlayers;
