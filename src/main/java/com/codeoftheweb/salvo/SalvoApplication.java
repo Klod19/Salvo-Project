@@ -107,15 +107,15 @@ public class SalvoApplication {
 			ship4.getType();
 			ship5.getType();
 			//add and control the locations of the ships for gamePlayer1
-			ship1.addLocation("H5H4H3H2H1");
+			ship1.addLocation("H9G9F9E9D9");
 			ship1.getLocations();
-			ship2.addLocation("F1F2F3F4");
+			ship2.addLocation("J7I7H7G7");
 			ship2.getLocations();
-			ship3.addLocation("A1A2A3");
+			ship3.addLocation("A8A9A10");
 			ship3.getLocations();
-			ship4.addLocation("B1B2B3");
+			ship4.addLocation("E5E6E7");
 			ship4.getLocations();
-			ship5.addLocation("C1C2");;
+			ship5.addLocation("H3H4");;
 			ship5.getLocations();
 
 			//add and control the locations of the ships for gameplayer2

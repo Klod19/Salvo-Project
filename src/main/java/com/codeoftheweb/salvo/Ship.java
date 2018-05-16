@@ -69,10 +69,17 @@ public class Ship {
         //String[] tool = coordinates.split("(?<=\\G.{2})");
 
         // OR split it using guava Splitter class
-        for (String substring : Splitter.fixedLength(2).split(coordinates)) {
-            locations.add(substring);
+        if(coordinates.length()%2 == 0 ){
+            for (String substring : Splitter.fixedLength(2).split(coordinates)) {
+                locations.add(substring);
+            }
         }
-
+        // THIS ONE NEEDS TO BE CORRECTED
+        if(coordinates.length()%2 != 0) {
+            for (String substring : Splitter.fixedLength(3).split(coordinates)) {
+                locations.add(substring);
+            }
+        }
     }
 
     //getter of locations

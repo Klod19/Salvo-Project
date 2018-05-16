@@ -1,6 +1,18 @@
 // array to fill the header;
 var num_array = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var ltrs_array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+var characters = {
+    'A': 0,
+    'B': 1,
+    'C': 2,
+    'D': 3,
+    'E': 4,
+    'F': 5,
+    'G': 6,
+    'H': 7,
+    'I': 8,
+    'J': 9,
+}
 
 //FIRST OF ALL:
 // GET THE PAGE "gp" PARAMETER, IN ORDER TO USE IT FOR AJAX CALL; 3 WAYS
@@ -36,7 +48,7 @@ var ltrs_array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 // var par = $.urlParam('gp'); // 1
 // console.log(par);
 
-//3) SOLUTION FROM JS EBOOK, CHAPTER 18; I DON't UNDERSTAND IT BUT IT WORKS
+//3) SOLUTION FROM JS EBOOK, CHAPTER 18; I DON'T UNDERSTAND IT BUT IT WORKS
 function paramObj(search) {
     var obj = {};
     var reg = /(?:[?&]([^?&#=]+)(?:=([^&#]*))?)(?:#.*)?/g;
@@ -71,16 +83,47 @@ console.log(page_param.gp);
 //     alert("data retrieved");
 // })
 
-// actually my method is easier
+// actually, my method is easier:
 var pageId =  page_param.gp;
+var allShips =[];
 $.ajax("/api/game_view/" + pageId).done(function(data){
-    alert("data retrieved")
-
+    allShips.push(data.ships);
+    console.log(data);
+    console.log(allShips);
+    //the following gets five arrays made out of arrays; the latter are 2-elements arrays,
+    //containing letter-number
+    var loc_array=[];
+    for (var i=0; i<5; i++){
+        var loc = allShips.map(s => s[i].location.map(l => l.toString().split ("", 2)));
+        console.log(loc);
+        loc_array.push(loc);
+    }
+    console.log(loc_array);
+    function placeShips(){
+        loc_array.map(l => l.map(coord => get_coordinates(coord)));
+    }
+    placeShips();
 }).fail(function(){
     alert("ERROR DATA NOT RETRIEVED")
 });
 
+function get_coordinates(coord){
+    console.log(coord);
+    for (var i = 0; i < coord.length; i++){
+        var number = characters[coord[i][0]];
+        var y = number;
+        var x = coord[i][1];
+        // var one_cell = document.getElementsByTagName("td");
+        var one_cell = $("#cell_id_" + x + "_row_" + y );
+        $(one_cell).css("background-color", "yellow");
+        // if( $(one_cell).parent().attr("id") === "row_" + y &&
+        //                             $(one_cell).attr("id") === "cell_id_"+ x + "_row_" + y ){
+        //     $(one_cell).css("background-color", "yellow");
+        // }
+        // WHY .index() didn't work?? how can i get ALL the elements from document
+    }
 
+}
 
 
 // this function makes an header row , with the first column empty, and with the other columns filled
@@ -100,18 +143,42 @@ function renderHeaders() {
 //this loops through the array of letters, making empty columns for each letter; it is
 //called inside the following function ,as a nested loop
 function getColumnsHtml() {
-    return ltrs_array.map(function() {
+    return ltrs_array.map(function (cell, i) {
+        var t_data = $("<td>");
+        t_data.attr("id", "cell_" + i);
         return "<td></td>";
     }).join("")
-}
 
+}
 // this loops through the number array, making the 1st column with a letter and the other columns
 //empty through the function getColumnsHtml
 function getRowsHtml() {
     return num_array.map(function(n, i) {
         return "<tr><td>" + ltrs_array[i] + "</td>" +
             getColumnsHtml() + "</tr>";
+
     }).join("");
+}
+
+// make the table with a for loop
+function makeTable(){
+    for (var i = 0; i < ltrs_array.length; i++){
+        var row = $("<tr>").attr("id", "row_" + i)
+        $("#table-rows").append(row);
+        console.log(row.index());;
+        for (var k = 0; k <= num_array.length; k++){
+            var cell = $("<td>").attr("id", "cell_id_" + k + "_row_" + i )
+            $(row).append(cell);
+            if(cell.index() === 0){
+                cell.attr("class", "side_letters")
+                cell.html(ltrs_array[i])
+            }
+            else{
+                cell.attr("class", "table_cells")
+                cell.html("");
+            };
+        }
+    }
 }
 
 //this simply renders the rows
@@ -120,6 +187,30 @@ function renderRows () {
     $("#table-rows").html(html);
 }
 
+
+// THE FOLLOWING DOESN'T WORK; WHY?
+$("#cell_id_1_row_0").click(function(){
+    alert("LOL")
+    // alert("My position in table is X: " + this.cellIndex + "x" + this.tr.rowIndex);
+});
+
+//THE FOLLOWING WORKS ONLY IF I CHANGE ".table_cells" with "#table-rows"
+// $(".table_cells").on("click","td", function(){
+//     alert("LOL");
+//     console.log("works");
+// })
+// the following is not that useful
+$("#table-rows").on("click","td", function(e){
+    var parent = e.target.parentElement;
+    var id = $(parent).attr("id");
+
+})
+
+
 renderHeaders();
-renderRows();
+// renderRows();
+makeTable();
+
+
+
 
