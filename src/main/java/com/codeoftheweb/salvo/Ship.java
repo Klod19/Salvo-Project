@@ -64,23 +64,34 @@ public class Ship {
 
     //method to add the location; see:
     // https://stackoverflow.com/questions/3760152/split-string-to-equal-length-substrings-in-java
-    public void addLocation(String coordinates){
+    //IMPORTANT!!!! adding a single string and then splitting is overly complicated; add ann array
+    // of strings instead
+    public void addLocation(List<String> coordinates){
+//        locations.add(coordinates);
+//        List<String> locations = Arrays.asList(new String[]{"John", "Mary", "Bill"});
+        locations = coordinates;
+        //IMPORTANT! THE FOLLOWING IS OBSOLETE( was to resize the string according to its length
         //split the string "coordinates" using a regular expression;
         //String[] tool = coordinates.split("(?<=\\G.{2})");
-
         // OR split it using guava Splitter class
-        if(coordinates.length()%2 == 0 ){
-            for (String substring : Splitter.fixedLength(2).split(coordinates)) {
-                locations.add(substring);
-            }
-        }
-        // THIS ONE NEEDS TO BE CORRECTED
-        if(coordinates.length()%2 != 0) {
-            for (String substring : Splitter.fixedLength(3).split(coordinates)) {
-                locations.add(substring);
-            }
-        }
+//        if(coordinates.length()%2 == 0 ){
+//            for (String substring : Splitter.fixedLength(2).split(coordinates)) {
+//                locations.add(substring);
+//            }
+//        }
+        // IF the length of the string coordinates is an odd number, i.e. is has 10 :
+//        if(coordinates.length()%2 != 0) {
+//            //the following returns the a substring made of the last 3 digits of the string
+//            String substring_3 = coordinates.substring(coordinates.length() - 3);
+//            locations.add(substring_3);
+//            //the following makes a string out of the old one MINUS the last three characters
+//            String new_string = coordinates.substring(0, coordinates.length()-3);
+//            for (String substring : Splitter.fixedLength(2).split(new_string)) {
+//                locations.add(substring);
+//            }
+//        }
     }
+
 
     //getter of locations
     public List<String> getLocations() {

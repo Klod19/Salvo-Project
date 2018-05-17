@@ -157,7 +157,7 @@ public class SalvoController {
         //I need to turn this Set into a List
         List <GamePlayer> gps_list = new ArrayList<>(gps);
         //now I have to add the gamePlayers, filtering the data I need (their Id and the Map "player")
-        gameInfo.put("gamePlayer", gps_list.stream()
+        gameInfo.put("gamePlayers", gps_list.stream()
 
                                    .map(gp -> gpInfo(gp))
 

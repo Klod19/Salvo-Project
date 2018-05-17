@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Date;
 
 
@@ -107,28 +108,29 @@ public class SalvoApplication {
 			ship4.getType();
 			ship5.getType();
 			//add and control the locations of the ships for gamePlayer1
-			ship1.addLocation("H9G9F9E9D9");
+			//THE FOLLOWING MAKES A LIST OUT OF THIS, IN ONE LINE
+			ship1.addLocation( Arrays.asList("D10", "E10", "F10", "G10", "H10"));
 			ship1.getLocations();
-			ship2.addLocation("J7I7H7G7");
+			ship2.addLocation(Arrays.asList(new String[]{"J7", "I7", "H7", "G7"}));
 			ship2.getLocations();
-			ship3.addLocation("A8A9A10");
+			ship3.addLocation(Arrays.asList(new String[]{"A8", "A9", "A10"}));
 			ship3.getLocations();
-			ship4.addLocation("E5E6E7");
+			ship4.addLocation(Arrays.asList(new String[]{"E5", "E6", "E7"}));
 			ship4.getLocations();
-			ship5.addLocation("H3H4");;
+			ship5.addLocation(Arrays.asList(new String[]{"H3", "H4"}));;
 			ship5.getLocations();
 
 			//add and control the locations of the ships for gameplayer2
-			ship6.addLocation("H5H4H3H2H1");
-			ship6.getLocations();
-			ship7.addLocation("F1F2F3F4");
-			ship7.getLocations();
-			ship8.addLocation("A1A2A3");
-			ship8.getLocations();
-			ship9.addLocation("B1B2B3");
-			ship9.getLocations();
-			ship10.addLocation("C1C2");
-			ship10.getLocations();
+			ship1.addLocation( Arrays.asList(new String[]{"D10", "E10", "F10", "G10", "H10"}));
+			ship1.getLocations();
+			ship2.addLocation(Arrays.asList(new String[]{"J7", "I7", "H7", "G7"}));
+			ship2.getLocations();
+			ship3.addLocation(Arrays.asList(new String[]{"A8", "A9", "A10"}));
+			ship3.getLocations();
+			ship4.addLocation(Arrays.asList(new String[]{"E5", "E6", "E7"}));
+			ship4.getLocations();
+			ship5.addLocation(Arrays.asList(new String[]{"H3", "H4"}));;
+			ship5.getLocations();
 
 			//save the ships
 			shipRepository.save(ship1);

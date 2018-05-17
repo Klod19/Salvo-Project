@@ -1,18 +1,6 @@
 // array to fill the header;
 var num_array = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var ltrs_array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
-var characters = {
-    'A': 0,
-    'B': 1,
-    'C': 2,
-    'D': 3,
-    'E': 4,
-    'F': 5,
-    'G': 6,
-    'H': 7,
-    'I': 8,
-    'J': 9,
-}
 
 //FIRST OF ALL:
 // GET THE PAGE "gp" PARAMETER, IN ORDER TO USE IT FOR AJAX CALL; 3 WAYS
@@ -63,7 +51,7 @@ function paramObj(search) {
 var page_param =  paramObj("?gp=1");
 console.log(page_param.gp);
 
-// now I use the obtained parameter to make an AJAX call; from:
+// SECOND STEP: I use the obtained parameter to make an AJAX call; from:
 //https://stackoverflow.com/questions/31321402/how-to-pass-javascript-variables-inside-a-url-ajax
 //first I make an URL
 // function makeUrl() {
@@ -82,50 +70,72 @@ console.log(page_param.gp);
 // doAjax(makeUrl()).done(function (data) {
 //     alert("data retrieved");
 // })
-
 // actually, my method is easier:
+//get the pageId from the parameter obtained earlier
 var pageId =  page_param.gp;
 var allShips =[];
+var loc_array=[];
+var gamePlayers =[]
 $.ajax("/api/game_view/" + pageId).done(function(data){
     allShips.push(data.ships);
+    gamePlayers.push(data.gamePlayers);
+    console.log(gamePlayers);
     console.log(data);
     console.log(allShips);
-    //the following gets five arrays made out of arrays; the latter are 2-elements arrays,
-    //containing letter-number
-    var loc_array=[];
-    for (var i=0; i<5; i++){
-        var loc = allShips.map(s => s[i].location.map(l => l.toString().split ("", 2)));
-        console.log(loc);
-        loc_array.push(loc);
-    }
-    console.log(loc_array);
-    function placeShips(){
-        loc_array.map(l => l.map(coord => get_coordinates(coord)));
-    }
-    placeShips();
+    //call the functions to make the empty grid
+    renderHeaders();
+// renderRows();
+    makeTable();
+    //call the functions to place the ships
+    getLocations(allShips);
+    //calle the function to render the two players' names
+    getPlayers(gamePlayers);
 }).fail(function(){
     alert("ERROR DATA NOT RETRIEVED")
 });
 
-function get_coordinates(coord){
-    console.log(coord);
-    for (var i = 0; i < coord.length; i++){
-        var number = characters[coord[i][0]];
-        var y = number;
-        var x = coord[i][1];
-        // var one_cell = document.getElementsByTagName("td");
-        var one_cell = $("#cell_id_" + x + "_row_" + y );
-        $(one_cell).css("background-color", "yellow");
-        // if( $(one_cell).parent().attr("id") === "row_" + y &&
-        //                             $(one_cell).attr("id") === "cell_id_"+ x + "_row_" + y ){
-        //     $(one_cell).css("background-color", "yellow");
-        // }
-        // WHY .index() didn't work?? how can i get ALL the elements from document
+//following: the 3 functions to place the ships
+function getLocations(ships_array){
+    for (var i=0; i<5; i++){
+        var loc = ships_array.map(s => s[i].location);
+        console.log(loc);
+        loc_array.push(loc);
     }
-
+    placeShips(loc_array);
+    console.log(loc_array);
 }
 
+function placeShips(array){
+    array.map(l => l.map(coord => get_coordinates(coord)));
+}
 
+function get_coordinates(coord){
+    console.log(coord);
+    //SIMPLE SOLUTION WITH EASIER COORDINATES
+    coord.forEach(function(c){
+        var one_cell = $("#"+c);
+        $(one_cell).css("background-color", "yellow");
+    })
+}
+
+//FOLLOWING: ADD CURRENT PLAYER + OPPONENT
+function getPlayers(array){
+    //MAKE A NORMAL FOR LOOP
+    array.forEach(function(gp, i){
+        console.log(gp[i].id);
+        if (gp[i].id === pageId ){
+            $("#current_user").html(gp[i].player.userName);
+        }
+        else{
+            $("#opponent").html(gp[i].player.userName)
+        }
+    })
+}
+
+// WHY .index() didn't work?? how can i get ALL the elements from document
+//BECAUSE IT SHOULD BE: one_cell.index(one_cell[number])
+
+//FOLLOWING: TWO DIFFERENT WAYS TO MAKE THE EMPTY GRID
 // this function makes an header row , with the first column empty, and with the other columns filled
 // with the numbers from the array
 function makeNumberHeaders() {
@@ -154,37 +164,38 @@ function getColumnsHtml() {
 //empty through the function getColumnsHtml
 function getRowsHtml() {
     return num_array.map(function(n, i) {
-        return "<tr><td>" + ltrs_array[i] + "</td>" +
+        return "<tr><td id='"+ i +"'>" + ltrs_array[i] + "</td>" +
             getColumnsHtml() + "</tr>";
 
     }).join("");
-}
-
-// make the table with a for loop
-function makeTable(){
-    for (var i = 0; i < ltrs_array.length; i++){
-        var row = $("<tr>").attr("id", "row_" + i)
-        $("#table-rows").append(row);
-        console.log(row.index());;
-        for (var k = 0; k <= num_array.length; k++){
-            var cell = $("<td>").attr("id", "cell_id_" + k + "_row_" + i )
-            $(row).append(cell);
-            if(cell.index() === 0){
-                cell.attr("class", "side_letters")
-                cell.html(ltrs_array[i])
-            }
-            else{
-                cell.attr("class", "table_cells")
-                cell.html("");
-            };
-        }
-    }
 }
 
 //this simply renders the rows
 function renderRows () {
     var html = getRowsHtml();
     $("#table-rows").html(html);
+}
+
+// OR : make the table with a for loop (my solution, easier to assign ids;
+function makeTable(){
+    for (var i = 0; i < ltrs_array.length; i++){
+        var row = $("<tr>").attr("id", "row_" + i)
+        $("#table-rows").append(row);
+        console.log(row.index());;
+        for (var k = 0; k <= num_array.length; k++){
+            // var cell = $("<td>").attr("id", "cell_id_" + k + "_row_" + i )
+            var cell = $("<td>")
+            $(row).append(cell);
+            if(cell.index() === 0){
+                cell.attr({"id": "side_cell_"+i, "class": "side_letters"})
+                cell.html(ltrs_array[i])
+            }
+            else{
+                cell.attr({"id" : ltrs_array[i]+k , "class": "table_cells"});
+                cell.html("");
+            };
+        }
+    }
 }
 
 
@@ -195,21 +206,19 @@ $("#cell_id_1_row_0").click(function(){
 });
 
 //THE FOLLOWING WORKS ONLY IF I CHANGE ".table_cells" with "#table-rows"
-// $(".table_cells").on("click","td", function(){
-//     alert("LOL");
-//     console.log("works");
-// })
-// the following is not that useful
-$("#table-rows").on("click","td", function(e){
-    var parent = e.target.parentElement;
-    var id = $(parent).attr("id");
-
+$(".table_cells").on("click", function(){
+    alert("LOL");
+    console.log(this.id);
 })
+// the following is not that useful
+// $("#table-rows").on("click","td", function(e){
+//     var parent = e.target.parentElement;
+//     var id = $(parent).attr("id");
+//
+// })
 
 
-renderHeaders();
-// renderRows();
-makeTable();
+
 
 
 
