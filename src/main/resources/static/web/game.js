@@ -2,6 +2,13 @@
 var num_array = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var ltrs_array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 
+var salvo_array_one = [
+    { "gamePlayer_id": "1", "turn": "1", "player": "1", "locations": ["H1", "A2"] },
+    { "gamePlayer_id": "2", "turn": "1", "player": "2", "locations": ["A8", "F10"] },
+    { "gamePlayer_id": "1", "turn": "2", "player": "1", "locations": ["B4", "D8"] },
+    { "gamePlayer_id": "2", "turn": "2", "player": "2", "locations": ["H7", "D10"] }
+];
+
 //FIRST OF ALL:
 // GET THE PAGE "gp" PARAMETER, IN ORDER TO USE IT FOR AJAX CALL; 3 WAYS
 
@@ -21,35 +28,37 @@ var ltrs_array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 // })();
 //
 
-//2)SOLUTION FROM STACKOVERFLOW (see below); THIS WORKS, I DONT UNDERSTAND IT
-//https://stackoverflow.com/questions/19491336/get-url-parameter-jquery-or-how-to-get-query-string-values-in-js
-// $.urlParam = function(name) {
-//     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-//     if (results == null) {
-//         return null;
-//     }
-//     else {
-//         return decodeURI(results[1]) || 0;
-//     }
-// }
+//2) SOLUTION FROM JS EBOOK, CHAPTER 18; I DON'T UNDERSTAND AND IT MISSES SOMETHING; MUST
+//ADD A WAY TO CHOOSE NUMBER OF PARAMETER "search"
+// function paramObj(search) {
+//     var obj = {};
+//     var reg = /(?:[?&]([^?&#=]+)(?:=([^&#]*))?)(?:#.*)?/g;
 //
-// var par = $.urlParam('gp'); // 1
-// console.log(par);
+//     search.replace(reg, function(match, param, val) {
+//         obj[decodeURIComponent(param)] = val === undefined ? "" : decodeURIComponent(val);
+//     });
+//     console.log(obj);
+//     return obj;
+// }
+// //so i get the gp parameter as an object;
+// var page_param =  paramObj("?gp=1");
+// console.log(page_param);
+// console.log(page_param.gp);
 
-//3) SOLUTION FROM JS EBOOK, CHAPTER 18; I DON'T UNDERSTAND IT BUT IT WORKS
-function paramObj(search) {
-    var obj = {};
-    var reg = /(?:[?&]([^?&#=]+)(?:=([^&#]*))?)(?:#.*)?/g;
+//3)SOLUTION FROM STACKOVERFLOW (see below); THIS WORKS, I DONT UNDERSTAND IT
+https://stackoverflow.com/questions/19491336/get-url-parameter-jquery-or-how-to-get-query-string-values-in-js
+    function urlParam(name) {
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        if (results == null) {
+            return null;
+        }
+        else {
+            return decodeURI(results[1]) || 0;
+        }
+    }
 
-    search.replace(reg, function(match, param, val) {
-        obj[decodeURIComponent(param)] = val === undefined ? "" : decodeURIComponent(val);
-    });
-
-    return obj;
-}
-//so i get the gp parameter as an object;
-var page_param =  paramObj("?gp=1");
-console.log(page_param.gp);
+var par = urlParam('gp'); // 1
+console.log(par);
 
 // SECOND STEP: I use the obtained parameter to make an AJAX call; from:
 //https://stackoverflow.com/questions/31321402/how-to-pass-javascript-variables-inside-a-url-ajax
@@ -72,12 +81,19 @@ console.log(page_param.gp);
 // })
 // actually, my method is easier:
 //get the pageId from the parameter obtained earlier
-var pageId =  page_param.gp;
+// var pageId =  page_param.gp;
+
+var pageId = par;
+console.log("PAGE ID:" + pageId);
 var allShips =[];
 var loc_array=[];
-var gamePlayers =[]
+var gamePlayers =[];
+var salvoesArray =[]
 $.ajax("/api/game_view/" + pageId).done(function(data){
     allShips.push(data.ships);
+    salvoesArray.push(data.salvoes);
+    //salvoesArrayy is an array of 2 arrays of objects; let's concatenate the 2 arrays of objects:
+    var allSalvoes = salvoesArray[0][0].concat(salvoesArray[0][1]);
     gamePlayers.push(data.gamePlayers);
     console.log(gamePlayers);
     console.log(data);
@@ -88,8 +104,8 @@ $.ajax("/api/game_view/" + pageId).done(function(data){
     makeTable();
     //call the functions to place the ships
     getLocations(allShips);
-    //calle the function to render the two players' names
-    getPlayers(gamePlayers);
+    //call the function to render the two players' names
+    getPlayers(gamePlayers[0]);
 }).fail(function(){
     alert("ERROR DATA NOT RETRIEVED")
 });
@@ -115,19 +131,43 @@ function get_coordinates(coord){
     coord.forEach(function(c){
         var one_cell = $("#"+c);
         $(one_cell).css("background-color", "yellow");
+        salvo_array_one.forEach(function(s){
+            if (s.gamePlayer_id != pageId && (s.locations[0] == $(one_cell).attr("id")
+                || s.locations[1]  == $(one_cell).attr("id"))){
+                $(one_cell).css("background-color", "red");
+                $(one_cell).html(s.turn);
+
+                s.locations.forEach(function(lo){
+                    if (s.gamePlayer_id != pageId && lo != $(one_cell).attr("id")){
+                        var missed = $("#"+lo)
+                        $(missed).css("background-color", "aquamarine");
+                        $(missed).html(s.turn)
+                    }
+                })
+            }
+
+        });
+    });
+    salvo_array_one.forEach(function(ms){
+       if(ms.gamePlayer_id == pageId){
+           ms.locations.forEach(function(msl){
+           var my_salvo_cell = $("#salvo_cell"+msl);
+           my_salvo_cell.css("background-color", "blue");
+           my_salvo_cell.html(ms.turn);
+           })
+       }
     })
+
 }
 
 //FOLLOWING: ADD CURRENT PLAYER + OPPONENT
 function getPlayers(array){
-    //MAKE A NORMAL FOR LOOP
-    array.forEach(function(gp, i){
-        console.log(gp[i].id);
-        if (gp[i].id === pageId ){
-            $("#current_user").html(gp[i].player.userName);
+    array.forEach(function(gp){
+        if(gp.id == pageId){
+            $("#current_user").html(gp.player.userName);
         }
-        else{
-            $("#opponent").html(gp[i].player.userName)
+        else {
+            $("#opponent").html(gp.player.userName);
         }
     })
 }
@@ -148,6 +188,7 @@ function makeNumberHeaders() {
 function renderHeaders() {
     var html = makeNumberHeaders();
     $("#table-headers").html(html);
+    $("#salvoes-header").html(html);
 }
 
 //this loops through the array of letters, making empty columns for each letter; it is
@@ -177,22 +218,31 @@ function renderRows () {
 }
 
 // OR : make the table with a for loop (my solution, easier to assign ids;
-function makeTable(){
+function makeTable(){//makes the table for the ships AND the table for the salvoes
     for (var i = 0; i < ltrs_array.length; i++){
         var row = $("<tr>").attr("id", "row_" + i)
+        var salvo_row = $("<tr>").attr("id", "salvo_row_" + i)
         $("#table-rows").append(row);
+        $("#salvoes-rows").append(salvo_row);
+
         console.log(row.index());;
         for (var k = 0; k <= num_array.length; k++){
             // var cell = $("<td>").attr("id", "cell_id_" + k + "_row_" + i )
-            var cell = $("<td>")
+            var cell = $("<td>");
+            var salvo_cell= $("<td>");
             $(row).append(cell);
+            $(salvo_row).append(salvo_cell);
             if(cell.index() === 0){
-                cell.attr({"id": "side_cell_"+i, "class": "side_letters"})
-                cell.html(ltrs_array[i])
+                cell.attr({"id": "side_cell_"+i, "class": "side_letters"});
+                cell.html(ltrs_array[i]);
+                salvo_cell.attr({"id": "salvo_side_cell"+i, "class" : "side_letters"});
+                salvo_cell.html(ltrs_array[i]);
             }
             else{
                 cell.attr({"id" : ltrs_array[i]+k , "class": "table_cells"});
                 cell.html("");
+                salvo_cell.attr({"id": "salvo_cell"+ ltrs_array[i]+k, "class": "table_cells"});
+                salvo_cell.html("");
             };
         }
     }

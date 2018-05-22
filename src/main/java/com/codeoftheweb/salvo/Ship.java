@@ -21,7 +21,7 @@ public class Ship {
     private GamePlayer gamePlayer;
 
     //this assigns many locations to a single ship; one-to-many, but "to many" are pieces of data,
-    // not a class
+    // not a class this is why a normal array wouldn't be enough
     @ElementCollection // i make this to store this data on the database cell!
     @Column(name="locations")
     private List<String> locations = new ArrayList<>();

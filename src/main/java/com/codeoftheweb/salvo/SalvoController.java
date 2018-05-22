@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.Id;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 //THIS IS TO SHOW THE DATA I CREATED AND I WANT
 
@@ -45,7 +47,9 @@ public class SalvoController {
         dto.put("id", game.getId());
         dto.put("created", game.getDate());
         dto.put("gamePlayers", game.getGamePlayers().stream()
+
                                                     .map(gp -> gpInfo(gp))
+
                                                     .collect(toList())
         );
 
@@ -66,46 +70,6 @@ public class SalvoController {
         return dto;
     }
 
-    //BUT THE FOLLOWING 3 LINES DON'T WORK
-//    public List<Long> getIds(List<Game> games) {
-//        List <Game> allGames = repo.findAll();
-//        return games.stream().map(Game::getId).collect(toList());
-//    }
-
-    // now add additional information: a date; store the data as a Map(Object in JS): "id": long; "created": date;
-    // let's try the long method,  with a for loop
-//    private List<Map> getGameInfo(){
-////        List <GamePlayer> allGamePlayers = game_player_repo.findAll();
-//        List <Game> allGames = repo.findAll();
-//
-//        List <Map>  infos = new ArrayList<>();
-//        for(int i=0; i < allGames.size(); i++){
-//                Map<String, Object> element = new LinkedHashMap<>();
-//                long id = allGames.get(i).getId();
-//                Date date = allGames.get(i).getDate();
-//                element.put("id", id);
-//                element.put("created", date);
-//                List<Map> game_player = new ArrayList<>();
-//                Set<GamePlayer> gamePlayers = allGames.get(i).getGamePlayers();
-//                for (int k = 0 ; k < gamePlayers.size(); k++){
-//
-//                }
-//                element.put("gamePlayers", game_player);
-//                infos.add(element);
-//        }
-//        return infos;
-//    }
-//    //try a shorter version; i don't get how to make it work
-//    private List<Map> getGameInfo() {
-//        List <Game> allGames = repo.findAll();
-//        List <Map> infos = new ArrayList<>();
-//        Map<String, Map> element = new LinkedHashMap<>();
-//        Map newElement = element.put("id", allGames.stream().map(g -> g.getId()));
-//        allGames.stream().
-//        element.put("creation", allGames.stream().map(g -> g.getDate()));
-//
-//    }
-
     //following: getShipsInfo, called in the method getGamesbyGp, returns infos on the ships
     public Map getShipsInfo (Ship s){
         Map <String, Object> single_ship = new LinkedHashMap<>();
@@ -114,6 +78,22 @@ public class SalvoController {
         // then add the location, which is a List
         single_ship.put("location", s.getLocations());
         return single_ship;
+    }
+
+    //following: getSalvoInfo, called in method getGameByPg, returns inofs on salvos
+    public Map getSalvoInfo (Salvo sl){
+        Map <String, Object> single_salvo = new LinkedHashMap<>();
+        // first add the salvo's gamePlayer
+        single_salvo.put("gamePlayer_id", sl.getGamePlayer().getId());
+        //add the salvo's turn
+        single_salvo.put("turn", sl.getTurn());
+        //add the salvo's player's id
+        single_salvo.put("player_id", sl.getGamePlayer().getPlayer().getId());
+        //add the salvo's player's username
+        single_salvo.put("player_userName", sl.getGamePlayer().getPlayer().getUserName());
+        // then add the location, which is a List
+        single_salvo.put("locations", sl.getLocations());
+        return single_salvo;
     }
 
 
@@ -144,7 +124,7 @@ public class SalvoController {
 
         // 2) or find one gamePlayer by id with .findOne(id), and then work with it
         GamePlayer current_gp = gp_repo.findOne(gamePlayerId);
-        Game current_game= current_gp.getGame();
+        Game current_game = current_gp.getGame();
         gameInfo.put("id", current_game.getId());
         gameInfo.put("created", current_game.getId());
         //I want the current gamePlayer id and the current player userName
@@ -164,23 +144,47 @@ public class SalvoController {
                                    .collect(toList()));
 
         //this method needs ships too
-        List <Map> shipsInfo = new LinkedList<>();
+        List <Map> shipsInfo = new LinkedList<>(); //this one is probably useless
         Set<Ship> ships_set = current_gp.getShips();
         gameInfo.put("ships", ships_set.stream()
 
                               .map(s -> getShipsInfo(s))
 
                               .collect(toList()));
+
+        //we need to add salvoes too!
+        Set <GamePlayer> two_current_gp = current_game.getGamePlayers();
+
+        two_current_gp.stream().map(cgp -> cgp.getSalvoes());
+        Map <String, Object> one_salvo = new LinkedHashMap<>();
+
+        //alternative 1, doesn't work
+        Set<Set<Salvo>> salvoes_set = two_current_gp.stream().map(cgp -> cgp.getSalvoes())
+                .collect(Collectors.toSet());
+
+
+        gameInfo.put("salvoes",  salvoes_set.stream()
+
+                                .map(sl -> sl.stream()
+                                        .map(salvo1 -> getSalvoInfo(salvo1))
+                                        .collect(toList()))
+
+                                .collect(toList()));
+
         return gameInfo;
 
       //!! METHOD END !!!!
     }
 
-
 }
 
 
-
-
-
-
+//the following works, but returns a JSON with the salvo only for the current game player
+//    List<Map> salvoesInfo = new LinkedList<>(); //this one is probably useless
+//    Map <String, Object> one_salvo = new LinkedHashMap<>();
+//    Set<Salvo> salvoes_set = current_gp.getSalvoes();
+//        gameInfo.put("salvoes", salvoes_set.stream()
+//
+//                .map(sl -> getSalvoInfo(sl))
+//
+//                .collect(toList()));
