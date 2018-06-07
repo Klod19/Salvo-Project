@@ -23,6 +23,8 @@ public class SalvoController {
     private GameRepository repo;
     @Autowired
     private GamePlayerRepository gp_repo;
+    @Autowired
+    private PlayerRepository p_repo;
 
     @RequestMapping("/games")
 //    public List <Game> getAll() { THIS RETURNS ALL THE GAMES
@@ -66,11 +68,14 @@ public class SalvoController {
         playerInfo.put("userName", gp.getPlayer().getUserName());
         //then let's make "dto", i.e. the fields of "GamePlayer"
         dto.put("id", gp.getId());
+        if (gp.getScore() != null) {
+            dto.put("score", gp.getScore().getScore_amount());
+        }
         dto.put("player", playerInfo);
         return dto;
     }
 
-    //following: getShipsInfo, called in the method getGamesbyGp, returns infos on the ships
+    //following: getShipsInfo, called in the method getGamebyGp, returns infos on the ships
     public Map getShipsInfo (Ship s){
         Map <String, Object> single_ship = new LinkedHashMap<>();
         // first add the ship's Type to the Map
@@ -96,6 +101,46 @@ public class SalvoController {
         return single_salvo;
     }
 
+//    @RequestMapping("/test")
+//    public List<Object> test(){
+//        List<GamePlayer> allGamePlayers = gp_repo.findAll();
+//        return allGamePlayers.stream().map(gp -> gp.getScore().getScore_amount())
+//                .collect(toList());
+//    }
+
+
+    @RequestMapping("/scores_list")
+    public Map<String, Object> getPoints(){
+        Map<String, Object> allPlayers = new HashMap<>();
+
+        List<GamePlayer> allGamePlayers = gp_repo.findAll();
+        for (int i = 0; i < allGamePlayers.size(); i++ ) {
+            String userName = allGamePlayers.get(i).getPlayer().getUserName();
+            if (! allPlayers.containsKey(userName)) {
+
+                Map<String, Object> playerScore = new HashMap<>();
+
+                //the following 3 lines make a count of the respective values
+                playerScore.put("wins", allGamePlayers.get(i).getPlayer().getScores().stream().filter(score -> score.getScore_amount() == 1).count());
+                playerScore.put("losses", allGamePlayers.get(i).getPlayer().getScores().stream().filter(score -> score.getScore_amount() == 0).count());
+                playerScore.put("ties", allGamePlayers.get(i).getPlayer().getScores().stream().filter(score -> score.getScore_amount() == 0.5).count());
+                //make the "count" into a string; parse this string to a double, so "total" stays double (it stays double also with int, but whatever))
+                double total_wins = Double.parseDouble(playerScore.get("wins").toString());
+                double total_losses = Double.parseDouble(playerScore.get("losses").toString());
+                double total_ties = Double.parseDouble(playerScore.get("ties").toString());
+                double total = (total_wins* 1) + (total_ties * 0.5);
+                playerScore.put("total", total);
+                allPlayers.put(userName, playerScore);
+
+            }
+            // WHY THIS DOESN'T WORK? IS THERE A WAY TO CREATE A FUNCTION OUT OF THIS??
+//            public long countScores (List list_gp, int i){
+//                list_gp.get(i).getPlayer().getScores().stream().filter(score -> score.getScore_amount() == 1).count();
+//            }
+        }
+
+        return allPlayers;
+    }
 
     @RequestMapping("/game_view/{gamePlayerId}")
     public Map<String, Object> getGameByGp(@PathVariable Long gamePlayerId) {
@@ -175,6 +220,7 @@ public class SalvoController {
 
       //!! METHOD END !!!!
     }
+
 
 }
 

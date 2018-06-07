@@ -2,13 +2,6 @@
 var num_array = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var ltrs_array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 
-var salvo_array_one = [
-    { "gamePlayer_id": "1", "turn": "1", "player": "1", "locations": ["H1", "A2"] },
-    { "gamePlayer_id": "2", "turn": "1", "player": "2", "locations": ["A8", "F10"] },
-    { "gamePlayer_id": "1", "turn": "2", "player": "1", "locations": ["B4", "D8"] },
-    { "gamePlayer_id": "2", "turn": "2", "player": "2", "locations": ["H7", "D10"] }
-];
-
 //FIRST OF ALL:
 // GET THE PAGE "gp" PARAMETER, IN ORDER TO USE IT FOR AJAX CALL; 3 WAYS
 
@@ -92,8 +85,9 @@ var salvoesArray =[]
 $.ajax("/api/game_view/" + pageId).done(function(data){
     allShips.push(data.ships);
     salvoesArray.push(data.salvoes);
-    //salvoesArrayy is an array of 2 arrays of objects; let's concatenate the 2 arrays of objects:
+    //salvoesArray is an array of 2 arrays of objects; let's concatenate the 2 arrays of objects:
     var allSalvoes = salvoesArray[0][0].concat(salvoesArray[0][1]);
+    console.log(allSalvoes);
     gamePlayers.push(data.gamePlayers);
     console.log(gamePlayers);
     console.log(data);
@@ -102,8 +96,8 @@ $.ajax("/api/game_view/" + pageId).done(function(data){
     renderHeaders();
 // renderRows();
     makeTable();
-    //call the functions to place the ships
-    getLocations(allShips);
+    //call the functions to place the ships+the salvoes made by the opponent
+    getLocations(allShips, allSalvoes);
     //call the function to render the two players' names
     getPlayers(gamePlayers[0]);
 }).fail(function(){
@@ -111,54 +105,74 @@ $.ajax("/api/game_view/" + pageId).done(function(data){
 });
 
 //following: the 3 functions to place the ships
-function getLocations(ships_array){
+function getLocations(ships_array, salvoes_array){
     for (var i=0; i<5; i++){
         var loc = ships_array.map(s => s[i].location);
         console.log(loc);
         loc_array.push(loc);
     }
-    placeShips(loc_array);
+    placeShips(loc_array, salvoes_array);
     console.log(loc_array);
 }
 
-function placeShips(array){
-    array.map(l => l.map(coord => get_coordinates(coord)));
+function placeShips(array, salvoes_array){
+    array.map(l => l.map(coord => get_coordinates(coord, salvoes_array)));
 }
 
-function get_coordinates(coord){
-    console.log(coord);
+function get_coordinates(coord, salvoes_array){
     //SIMPLE SOLUTION WITH EASIER COORDINATES
     coord.forEach(function(c){
         var one_cell = $("#"+c);
-        $(one_cell).css("background-color", "yellow");
-        salvo_array_one.forEach(function(s){
-            if (s.gamePlayer_id != pageId && (s.locations[0] == $(one_cell).attr("id")
-                || s.locations[1]  == $(one_cell).attr("id"))){
-                $(one_cell).css("background-color", "red");
-                $(one_cell).html(s.turn);
+        var one_salvo_cell = $("#salvo_cell"+c);
+        $(one_cell).css("background-color", "grey");
 
-                s.locations.forEach(function(lo){
-                    if (s.gamePlayer_id != pageId && lo != $(one_cell).attr("id")){
-                        var missed = $("#"+lo)
-                        $(missed).css("background-color", "aquamarine");
-                        $(missed).html(s.turn)
+        salvoes_array.forEach(function(s){
+            s.locations.forEach(function(lo, index){
+                if(s.gamePlayer_id == pageId){
+                    var my_salvo = $("#salvo_cell"+lo);
+                    my_salvo.css("background-color", "blue");
+                    my_salvo.html(s.turn);
+                }
+                if (s.gamePlayer_id != pageId ){
+                    var missed = $("#"+lo);
+                    $(missed).css("background-color", "aquamarine");
+                    $(missed).html(s.turn)
+                    if (lo == $(one_cell).attr("id")){
+                        //don't do the following with divs, make a class "ship" instead
+                        // var hit = $("<div>").attr("class", "hit");
+                        // $(hit).html(s.turn);
+                        // $(one_cell).append(hit);
+                        $(one_cell).attr("class", "hit");
+                        $(one_cell).html(s.turn);
                     }
-                })
-            }
-
+                }
+            })
         });
     });
-    salvo_array_one.forEach(function(ms){
-       if(ms.gamePlayer_id == pageId){
-           ms.locations.forEach(function(msl){
-           var my_salvo_cell = $("#salvo_cell"+msl);
-           my_salvo_cell.css("background-color", "blue");
-           my_salvo_cell.html(ms.turn);
-           })
-       }
-    })
 
+    // salvoes_array.forEach(function(ms){
+    //     if(ms.gamePlayer_id == pageId){
+    //         ms.locations.forEach(function(msl){
+    //             var my_salvo = $("#salvo_cell"+msl);
+    //             my_salvo.css("background-color", "blue");
+    //             my_salvo.html(ms.turn);
+    //         })
+    //     }
+    //     else {
+    //         ms.locations.forEach(function(msl){
+    //             var my_salvo = $("#salvo_cell"+msl);
+    //             my_salvo = $("#salvo_cell"+msl);
+    //             my_salvo.css("background-color", "red")
+    //             my_salvo.html(ms.turn);
+    //         })
+    //     }
+    // })
 }
+
+
+
+
+
 
 //FOLLOWING: ADD CURRENT PLAYER + OPPONENT
 function getPlayers(array){
@@ -267,9 +281,69 @@ $(".table_cells").on("click", function(){
 //
 // })
 
+//NOW make the leaderboard
+var scores_array = [];
+$.ajax("/api/scores_list").done(function(data){
+    make_scores_array(data);
+    //sort the scores_array ACCORDING TO THE "TOTAL", using the method .sort which calls the function compareValues
+    scores_array.sort(compareValues("total"));
+    makeLeaderboard(scores_array);
+}).fail(function(){
+    alert("ERROR DATA NOT RETRIEVED")
+});
 
+ function make_scores_array(score_list){
+     for (var key in score_list){
+         var scores_object = {};
+         scores_object["userName"] = key;
+         scores_object["total"]= score_list[key].total;
+         scores_object["wins"]= score_list[key].wins;
+         scores_object["ties"]= score_list[key].ties;
+         scores_object["losses"]= score_list[key].losses;
+         scores_array.push(scores_object);
 
+     }
+ }
 
+// function to sort the scores_array based on the value of the key "total"
+function compareValues(key) {
+    return function(a, b) {
 
+        const varA =  a[key];
+        const varB =  b[key];
 
+        let comparison = 0;
+        if (varA > varB) {
+            comparison = 1;
+        } else if (varA < varB) {
+            comparison = -1;
+        }
+        return (
+            comparison * -1 //to have it sorted in decreasing order;
+        );
+    };
+}
+
+function makeLeaderboard(array) {
+     // make the header
+    var row_header = $("<tr>");
+    Object.keys(array[0]).forEach(function(key) {
+        // key: the name of the object keyt
+        var header_elem = $("<th>");
+        header_elem.html(key === "userName" ? "User" : key);
+        row_header.append(header_elem);
+    });
+    $("#leaderboard_header").append(row_header);
+
+    //make the table
+    array.forEach(function (player_data) {
+        var row = $("<tr>");
+        for (let element of Object.values(player_data)) {
+            var table_elem = $("<td>").html(element);
+            row.append(table_elem);
+        }
+        $("#leaderboard_body").append(row);
+    })
+
+}
 

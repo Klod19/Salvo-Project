@@ -1,5 +1,7 @@
 package com.codeoftheweb.salvo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -19,21 +21,27 @@ public class GamePlayer {
     @GeneratedValue(strategy=GenerationType.AUTO)//generates id number auto, increasing
     private long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="player_id")//arbitrary; name of column where player is saved
     private Player player;
 
+    //estabilish relationship between "Game" and GamePlayer"
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="game_id")
     private Game game;
 
+    @JsonIgnore
     @OneToMany(mappedBy="gamePlayer", fetch=FetchType.EAGER)
     Set<Ship> ships = new LinkedHashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy="gamePlayer", fetch=FetchType.EAGER)
     Set<Salvo> salvoes  = new LinkedHashSet<>();
 
     private Date date = new Date();
+
 
     public GamePlayer() { }
 
@@ -48,6 +56,7 @@ public class GamePlayer {
     }
 
     //getter for Player
+    @JsonIgnore
     public Player getPlayer() {
         return this.player;
     }
@@ -101,4 +110,15 @@ public class GamePlayer {
         sv.setGamePlayer(this);
     }
 
+    //DO I NEED THE FOLLOWING?
+//    public int  getScore() {
+//        score = this.getPlayer().getGame().get
+//    }
+
+
+    public Score getScore(){
+
+        return this.player.getScore(this.game);
+    }
 }
+

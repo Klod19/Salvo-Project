@@ -32,8 +32,8 @@ public class Salvo {
     public Salvo() {}; //Empty constructor for JACKSON
 
     // I'd create a new instance of "Salvo" with an int parameter "turn"
-    public Salvo (int turn){
-        this.turn = turn;
+    public Salvo (int new_turn){
+        this.turn = new_turn;
     }
     //the getter of "turn"
     public int getTurn() {

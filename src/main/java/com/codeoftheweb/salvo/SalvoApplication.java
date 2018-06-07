@@ -20,7 +20,8 @@ public class SalvoApplication {
 	@Bean
 	public CommandLineRunner initData(PlayerRepository playerRepository, GameRepository gameRepository,
 									  GamePlayerRepository gamePlayerRepository, ShipRepository
-									  shipRepository, SalvoRepository salvoRepository) {
+									  shipRepository, SalvoRepository salvoRepository,
+									  ScoreRepository scoreRepository) {
 		return (args) -> {
 			//make some players
 			Player player1 = new Player("j.bauer@ctu.gov ");
@@ -28,17 +29,14 @@ public class SalvoApplication {
 			Player player3 = new Player("kim_bauer@gmail.com");
 			Player player4 = new Player("t.almeida@ctu.gov");
 			Player player5 = new Player("lol.wut@gmail.com");
-            //save some players
-			playerRepository.save(player1);
-			playerRepository.save(player2);
-			playerRepository.save(player3);
-			playerRepository.save(player4);
-			playerRepository.save(player5);
+
 			// make some games
 			Game game1 = new Game();
 			Game game2 = new Game();
 			Game game3 = new Game();
 			Game game4 = new Game();
+			Game game5 = new Game();
+			Game game6 = new Game();
 			//change the creation date of the games
 			game1.getDate();
 			//the following line returns the same date as the one above
@@ -49,11 +47,7 @@ public class SalvoApplication {
 			System.out.println(game1.getDate());
 			System.out.println(game2.getDate());
 			System.out.println(game3.getDate());
-			//save the games
-			gameRepository.save(game1);
-			gameRepository.save(game2);
-			gameRepository.save(game3);
-			gameRepository.save(game4);
+
 //			GamePlayer gamePlayer1 = new GamePlayer(player1, game1);
 //			System.out.println(gamePlayer1);
 			GamePlayer gamePlayer1 = new GamePlayer(player1, game1);
@@ -63,14 +57,13 @@ public class SalvoApplication {
 			GamePlayer gamePlayer5 = new GamePlayer(player1, game3);
 			GamePlayer gamePlayer6 = new GamePlayer(player5, game3);
 			GamePlayer gamePlayer7 = new GamePlayer(player5, game4);
+			GamePlayer gamePlayer8 = new GamePlayer(player2, game4);
+			GamePlayer gamePlayer9 = new GamePlayer(player1, game5);
+			GamePlayer gamePlayer10 = new GamePlayer(player2, game5);
+			GamePlayer gamePlayer11 = new GamePlayer(player1, game6);
+			GamePlayer gamePlayer12 = new GamePlayer(player5, game6);
 
-			gamePlayerRepository.save(gamePlayer1);
-			gamePlayerRepository.save(gamePlayer2);
-			gamePlayerRepository.save(gamePlayer3);
-			gamePlayerRepository.save(gamePlayer4);
-			gamePlayerRepository.save(gamePlayer5);
-			gamePlayerRepository.save(gamePlayer6);
-			gamePlayerRepository.save(gamePlayer7);
+
 
 //			//make some ships
 			Ship ship1 = new Ship("Carrier");
@@ -132,17 +125,6 @@ public class SalvoApplication {
 			ship10.addLocation(Arrays.asList("J10", "J9"));;
 			ship10.getLocations();
 
-			//save the ships
-			shipRepository.save(ship1);
-			shipRepository.save(ship2);
-			shipRepository.save(ship3);
-			shipRepository.save(ship4);
-			shipRepository.save(ship5);
-			shipRepository.save(ship6);
-			shipRepository.save(ship7);
-			shipRepository.save(ship8);
-			shipRepository.save(ship9);
-			shipRepository.save(ship10);
 
 			//make some salvoes
 			Salvo salvo1 = new Salvo(1);
@@ -174,6 +156,63 @@ public class SalvoApplication {
 			gamePlayer1.addSalvo(salvo7);
 			gamePlayer2.addSalvo(salvo8);
 
+
+
+			//make some scores
+			Score score1 = new Score(game1, player1, 1.0 );
+			Score score2 = new Score(game1, player2, 0.0);
+			Score score3 = new Score(game2, player3, 0.5);
+			Score score4 = new Score(game2, player4, 0.5);
+			Score score5 = new Score(game3, player1, 0.0);
+			Score score6 = new Score(game3, player5, 1.0);
+			Score score7 = new Score(game4, player5, 1.0);
+			Score score8 = new Score(game4, player2, 0.0);
+			Score score9 = new Score(game5, player1, 1.0);
+			Score score10 = new Score(game5, player2, 0.0);
+			Score score11 = new Score(game6, player1, 0.0);
+			Score score12 = new Score(game6, player5, 1.0);
+
+
+			//save some players
+			playerRepository.save(player1);
+			playerRepository.save(player2);
+			playerRepository.save(player3);
+			playerRepository.save(player4);
+			playerRepository.save(player5);
+
+			//save the games
+			gameRepository.save(game1);
+			gameRepository.save(game2);
+			gameRepository.save(game3);
+			gameRepository.save(game4);
+			gameRepository.save(game5);
+			gameRepository.save(game6);
+
+			gamePlayerRepository.save(gamePlayer1);
+			gamePlayerRepository.save(gamePlayer2);
+			gamePlayerRepository.save(gamePlayer3);
+			gamePlayerRepository.save(gamePlayer4);
+			gamePlayerRepository.save(gamePlayer5);
+			gamePlayerRepository.save(gamePlayer6);
+			gamePlayerRepository.save(gamePlayer7);
+			gamePlayerRepository.save(gamePlayer8);
+			gamePlayerRepository.save(gamePlayer9);
+			gamePlayerRepository.save(gamePlayer10);
+			gamePlayerRepository.save(gamePlayer11);
+			gamePlayerRepository.save(gamePlayer12);
+
+			//save the ships
+			shipRepository.save(ship1);
+			shipRepository.save(ship2);
+			shipRepository.save(ship3);
+			shipRepository.save(ship4);
+			shipRepository.save(ship5);
+			shipRepository.save(ship6);
+			shipRepository.save(ship7);
+			shipRepository.save(ship8);
+			shipRepository.save(ship9);
+			shipRepository.save(ship10);
+
 			//save the salvoes in the repository
 			salvoRepository.save(salvo1);
 			salvoRepository.save(salvo2);
@@ -183,6 +222,20 @@ public class SalvoApplication {
 			salvoRepository.save(salvo6);
 			salvoRepository.save(salvo7);
 			salvoRepository.save(salvo8);
+
+			//save scores in repository
+			scoreRepository.save(score1);
+			scoreRepository.save(score2);
+			scoreRepository.save(score3);
+			scoreRepository.save(score4);
+			scoreRepository.save(score5);
+			scoreRepository.save(score6);
+			scoreRepository.save(score7);
+			scoreRepository.save(score8);
+			scoreRepository.save(score9);
+			scoreRepository.save(score10);
+			scoreRepository.save(score11);
+			scoreRepository.save(score12);
 
 
 		};

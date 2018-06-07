@@ -20,4 +20,19 @@ td{
 
 .table_cells{
     color:white;
+    /*display:flex;*/
+    /*justify-content: center;*/
+    /*align-items: center*/
 }
+
+.hit{
+    background-color:red !important;
+    color:white;
+    border-radius: 50%;
+    /*width:40px;*/
+    /*height:40px;*/
+    /*margin-left:2px !important;*/
+    /*align:center;*/
+
+}
+
