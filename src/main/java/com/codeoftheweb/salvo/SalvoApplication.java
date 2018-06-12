@@ -1,12 +1,31 @@
 package com.codeoftheweb.salvo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configurers.GlobalAuthenticationConfigurerAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.WebAttributes;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 
 @SpringBootApplication
@@ -24,11 +43,11 @@ public class SalvoApplication {
 									  ScoreRepository scoreRepository) {
 		return (args) -> {
 			//make some players
-			Player player1 = new Player("j.bauer@ctu.gov ");
-			Player player2 = new Player("c.obrian@ctu.gov");
-			Player player3 = new Player("kim_bauer@gmail.com");
-			Player player4 = new Player("t.almeida@ctu.gov");
-			Player player5 = new Player("lol.wut@gmail.com");
+			Player player1 = new Player("j.bauer@ctu.gov", "24");
+			Player player2 = new Player("c.obrian@ctu.gov", "27");
+			Player player3 = new Player("kim_bauer@gmail.com", "kb");
+			Player player4 = new Player("t.almeida@ctu.gov", "mole");
+			Player player5 = new Player("lol.wut@gmail.com", "troll");
 
 			// make some games
 			Game game1 = new Game();
@@ -243,4 +262,85 @@ public class SalvoApplication {
 
 }
 
+@Configuration //tells Spring to create an instance of this class automatically
+class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
+
+	@Autowired
+	PlayerRepository playerRepository;
+
+	@Override
+	public void init(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(inputName-> {
+			Player player = playerRepository.findByUserName(inputName);
+			if (player != null) {
+				// is "User" a Spring Boot class?
+				//User class could also have multiple roles, setted doing this:
+				//create a comma-separated list of roles, e.g., "INSTRUCTOR,STUDENT"
+				// and pass it to AuthorityUtils.commaSeparatedStringToAuthorityList(...).
+				//NOTICE: I didn't check if the user entered the correct password; this is
+				//handled by the User Class internally
+				return new User(player.getUserName(), player.getPassword(),
+						AuthorityUtils.createAuthorityList("USER"));
+			} else {
+				throw new UsernameNotFoundException("Unknown user: " + inputName);
+			}
+		});
+	}
+
+}
+
+@Configuration //tells Spring to create an instance of this class automatically
+@EnableWebSecurity
+class WebSecurityConfig extends WebSecurityConfigurerAdapter { //the first inherit from the second
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.authorizeRequests()
+//				.antMatchers("/**").permitAll()
+				.antMatchers("/web/games.html").permitAll()
+            	.antMatchers("/web/games.js").permitAll()
+            	.antMatchers("/web/game_style.css").permitAll()
+				.antMatchers("/gamesScreen.css").permitAll()
+				.antMatchers("/api/games").permitAll()
+				.antMatchers("/api/players").permitAll()
+				.antMatchers("/img/*").permitAll()
+				.antMatchers("/web/jQuery/jquery-3.3.1.min.js").permitAll()
+				.antMatchers("/jquerycookie/*").permitAll()
+				.antMatchers("/loginForm.css").permitAll()
+				.antMatchers("/admin/**").hasAuthority("ADMIN")
+				.antMatchers("/**").hasAuthority("USER")
+
+				.and()
+				.formLogin()
+				.usernameParameter("userName")
+				.passwordParameter("password")
+				.loginPage("/api/login");
+
+				http.logout().logoutUrl("/api/logout");
+
+		// turn off checking for CSRF tokens: these are additional keys that a server tells a browser to send with
+		// authenticated users to prevent a form of a attack called Cross-Site Forgery Request. CSRF tokens are disabled because
+		// supporting them requires a bit of work, and this kind of attack is more typical with regular web page browsing.
+		http.csrf().disable();
+
+		// if user is not authenticated, just send an authentication failure response
+		http.exceptionHandling().authenticationEntryPoint((req, res, exc) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED));
+
+		// if login is successful, just clear the flags asking for authentication
+		http.formLogin().successHandler((req, res, auth) -> clearAuthenticationAttributes(req));
+
+		// if login fails, just send an authentication failure response
+		http.formLogin().failureHandler((req, res, exc) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED));
+
+		// if logout is successful, just send a success response
+		http.logout().logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler());
+	}
+	//following: a utility function,is defined to remove the flag Spring sets when an unauthenticated user
+	// attempts to access some resource.
+	private void clearAuthenticationAttributes(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+		}
+	}
+}
 

@@ -1,6 +1,6 @@
 var allGames=[];
 $.ajax("/api/games").done(function(data) {
-    alert("data retrieved!");
+    // alert("data retrieved!");
     allGames.push(data)
     allGames[0].forEach(function(game){
         var listElement = $("<li>")
@@ -24,19 +24,56 @@ $.ajax("/api/games").done(function(data) {
     alert(data.statusText);
 });
 
+//event handlers for login-logout
+const login_btn = $("#login_btn");
+const logout_btn = $("#logout_btn");
+const logout_form = $("#logout-form");
+const login_form = $("#login-form");
 
-// var date = '1475235770601';
-// var d = new Date(parseInt(date, 10));
-// var ds = d.toString('MM/dd/yy HH:mm:ss');
-// console.log(ds);
-//this works
-// fetch( "/api/games").then(function(response) {
-//     console.log('Request succeeded: ' + response.statusText);
-// }).catch(function(error) {
-//     console.log( "Request failed: " + error.message );
-// });
-//this works too
-    // $.ajax({url: "/api/games", success: function(result){
-//     //         alert("success!");
-//     //     }});
-// let us use the following:
+login_btn.click(function(){
+    login(event)
+});
+
+logout_btn.click(function(){
+    logout(event);
+})
+
+//functions to manage login
+function login(evt) {
+    // why do i need to call event.preventDefault()???
+    evt.preventDefault();
+    var form = evt.target.form;
+    $.post("/api/login",
+        { userName: form["userName"].value,
+          password: form["password"].value })
+        .done(function(){
+                alert("welcome!"),
+                logout_form.show(),
+                login_btn.hide(),
+                form["userName"].value = "",
+                form["password"].value = "",
+                login_form.hide()
+        })
+
+        .fail(function(){
+            form["password"].value = "",
+                alert("Error: Login FAIL")
+
+        })
+}
+
+function logout(evt) {
+    evt.preventDefault();
+    $.post("/api/logout")
+        .done(function(){
+                alert("Successfully logged out"),
+                logout_form.hide(),
+                login_form.show(),
+                login_btn.show()
+        })
+
+        .fail(function(){
+            alert("Logout FAIL");
+        })
+
+}

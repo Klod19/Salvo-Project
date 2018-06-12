@@ -49,8 +49,9 @@ public class Player {
 
     public Player() { } //EMPTY CONSTRUCTOR FOR JACKSON
 
-    public Player(String userName/*, String userMail*/) {
+    public Player(String userName/*, String userMail*/, String password) {
         this.userName = userName;
+        this.password = password;
 //        this.userMail = userMail;
   
     }
@@ -63,6 +64,7 @@ public class Player {
     }
 
     public void setPassword(String password) {
+
         this.password = password;
     }
 
