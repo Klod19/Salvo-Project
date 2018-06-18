@@ -2,9 +2,11 @@ package com.codeoftheweb.salvo;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Id;
 import java.util.*;
@@ -27,20 +29,44 @@ public class SalvoController {
     private PlayerRepository p_repo;
 
     @RequestMapping("/games")
-//    public List <Game> getAll() { THIS RETURNS ALL THE GAMES
-//        List<Game> allGames =  repo.findAll();
-//         return  allGames;
-//    }
+    // make a method to show current player + games in a JSON object
+    public Map <String, Object> build (Authentication authentication){
+        Map<String, Object> currentP_and_Games = new LinkedHashMap<>();
+        currentP_and_Games.put("games", getGames());
+        //the following adds player information ONLY when that player is logged in
+        if (! (authentication == null || authentication instanceof AnonymousAuthenticationToken)){
+            currentP_and_Games.put("player", cp_infos(authentication));
 
+        }
+        return currentP_and_Games;
+    }
 
-//     try to get IDS with a shorter function; the following works
-    public List<Object> getIds() {
+    public Player currentPlayer (Authentication authentication) {
+        Player current_p = new Player();
+        if (! (authentication == null || authentication instanceof AnonymousAuthenticationToken)){
+            current_p = p_repo.findByUserName(authentication.getName());
+        }
+        return current_p;
+    }
+
+    // the following is a Map containing current player ID and current player userName
+    //!! the Class "Authentication" is automatically given by Spring!
+    public Map <String, Object> cp_infos (Authentication authentication) {
+        Map<String, Object> cpInfos = new LinkedHashMap<>();
+        cpInfos.put("id", currentPlayer(authentication).getId() );
+        cpInfos.put("userName", currentPlayer(authentication).getUserName());
+        cpInfos.put("aut.getName()", authentication.getName()); //it gets the username! is it the authorization name?
+        return cpInfos;
+    }
+
+    public List<Object> getGames() {
         List <Game> allGames = repo.findAll();
-        return allGames.stream()
+           List gamesList  =      allGames.stream()
 
                 .map(g -> makeGames(g))
 
                 .collect(toList());
+           return gamesList;
     }
 
     public Map<String, Object> makeGames(Game game){
@@ -66,6 +92,7 @@ public class SalvoController {
         //first let's make "playerInfo", with fields from class "Player"
         playerInfo.put("id", gp.getPlayer().getId());
         playerInfo.put("userName", gp.getPlayer().getUserName());
+        playerInfo.put("gpId", gp.getId());
         //then let's make "dto", i.e. the fields of "GamePlayer"
         dto.put("id", gp.getId());
         if (gp.getScore() != null) {
@@ -221,16 +248,50 @@ public class SalvoController {
       //!! METHOD END !!!!
     }
 
+    // METHOD TO CREATE A NEW USER!!!!
+    @RequestMapping(path = "/players", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> createUser(@RequestParam String userName, String password) {
+        //if no name is given:
+        if (userName.isEmpty()) {
+            return new ResponseEntity<>(makeMap("error", "No name given!"), HttpStatus.FORBIDDEN);
+        }
+        //if the given name is already in use:
+        Player player = p_repo.findByUserName(userName);
+        if (player != null) {
+            return new ResponseEntity<>(makeMap("error", "Username already exists"), HttpStatus.CONFLICT);
+        }
+        //if everything is ok, save the new player into the repository
+        Player newPlayer = p_repo.save(new Player(userName, password));
+        return new ResponseEntity<>(makeMap(userName, newPlayer.getId()) , HttpStatus.CREATED);
+    }
+
+    private Map<String, Object> makeMap(String key, Object value) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, value);
+        return map;
+    }
+
+
+
+//    @RequestMapping("api/players")
+//    public List<Map> register_players (String userName, String password){
+//        List<Map> registered_pl = new LinkedList<>();
+//        Map<String, Object> pl = new HashMap<>();
+//        List <Player> allPlayers = p_repo.findAll();
+//        Player player = new Player(userName, password);
+//        Long id = player.getId();
+//        if ( allPlayers.contains(player)){
+//
+//        }
+//        else{
+//            p_repo.save(player);
+//            pl.put("userName", player.getUserName());
+//            pl.put("password", player.getPassword());
+//            registered_pl.add(pl);
+//        }
+//        return registered_pl;
+//    }
+
 
 }
 
-
-//the following works, but returns a JSON with the salvo only for the current game player
-//    List<Map> salvoesInfo = new LinkedList<>(); //this one is probably useless
-//    Map <String, Object> one_salvo = new LinkedHashMap<>();
-//    Set<Salvo> salvoes_set = current_gp.getSalvoes();
-//        gameInfo.put("salvoes", salvoes_set.stream()
-//
-//                .map(sl -> getSalvoInfo(sl))
-//
-//                .collect(toList()));

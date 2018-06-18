@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+</head>
+<body>
+
+<!-- Modal -->
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Please insert your username and password</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+
+                    <form id="singIn-form"  onsubmit="return false">
+                        <input class="loginInp" id="userInput" type="text" name="userName" placeholder="Username"> <br>
+                        <input class="loginInp" id="pwInput" type="password" name="password" placeholder="Password"><br>
+                        <button id="signIn_btn">Sign in</button>
+                    </form>
+                </div>
+                <!--<div class="modal-footer">-->
+                    <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+                <!--</div>-->
+            </div>
+
+        </div>
+    </div>
+
+    <script src="games.js"></script>
+</body>
+</html>

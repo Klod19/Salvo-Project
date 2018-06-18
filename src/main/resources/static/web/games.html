@@ -2,17 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Salvo!</title>
+
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+    <!--<script>$(function(){-->
+        <!--$("#modal_container").load("login_popup.html");-->
+    <!--});-->
+    <!--</script>-->
+
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
+    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">-->
     <link rel="stylesheet" href="game_style.css">
 </head>
 <body>
 
-<form id="login-form" onsubmit="return false">
-    <label>Name: <input type="text" name="userName"></label>
-    <label>Password: <input type="text" name="password"></label>
+<!-- WHY DOES THE FOLLOWING FOR RETURN FALSE???-->
+<div id = "title">
+    <h2> Welcome <span id="welc_msg">to Salvo! Please log in</span>  <span id="player_name"></span></h2>
+</div>
+<form id="login-form"  onsubmit="return false">
+    <label>Name: <input id="userInput" type="text" name="userName"></label>
+    <label>Password: <input id="pwInput" type="password" name="password"></label>
     <button id="login_btn">Log in</button>
 </form>
+<div id="sign_in">
+    <h2> Not an user yet? <a href="#myModal" data-toggle="modal" data-target="#myModal" id="sign_in_popup">Sign in</a> </h2>
+</div>
+
+<!--MODAL STARTS HERE-->
+<div id="modal_container" class="container"></div>
+
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Please insert your username and password</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <form id="signIn-form"  onsubmit="return false">
+                    <input class="loginInp" id="userSignInput" type="text" name="userName" placeholder="Username"> <br>
+                    <input class="loginInp" id="pwSignInput" type="password" name="password" placeholder="Password"><br>
+                    <!--the following button dismisses the modal on click-->
+                    <button id="signIn_btn" data-dismiss="modal">Sign in</button>
+                </form>
+            </div>
+            <!--<div class="modal-footer">-->
+            <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+            <!--</div>-->
+        </div>
+
+    </div>
+</div>
+
+
+
+
 
 <form id="logout-form" onsubmit="return false">
     <button id="logout_btn">Log out</button>
@@ -22,8 +76,13 @@
 
 </ol>
 
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>-->
+<!--<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>-->
+<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <!--<script src="../jQuery/jquery-3.3.1.min.js"></script>-->
+
 <script src="games.js"></script>
 </body>
 </html>

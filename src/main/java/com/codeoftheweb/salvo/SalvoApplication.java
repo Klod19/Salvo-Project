@@ -305,6 +305,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter { //the first inher
 				.antMatchers("/img/*").permitAll()
 				.antMatchers("/web/jQuery/jquery-3.3.1.min.js").permitAll()
 				.antMatchers("/jquerycookie/*").permitAll()
+				.antMatchers("/web/login_popup.html").permitAll()
 				.antMatchers("/loginForm.css").permitAll()
 				.antMatchers("/admin/**").hasAuthority("ADMIN")
 				.antMatchers("/**").hasAuthority("USER")
