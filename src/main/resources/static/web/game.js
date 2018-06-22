@@ -83,12 +83,13 @@ var loc_array=[];
 var gamePlayers =[];
 var salvoesArray =[]
 $.ajax("/api/game_view/" + pageId).done(function(data){
-    allShips.push(data.ships);
-    salvoesArray.push(data.salvoes);
+    console.log(data);
+    allShips.push(data.games.ships);
+    salvoesArray.push(data.games.salvoes);
     //salvoesArray is an array of 2 arrays of objects; let's concatenate the 2 arrays of objects:
     var allSalvoes = salvoesArray[0][0].concat(salvoesArray[0][1]);
     console.log(allSalvoes);
-    gamePlayers.push(data.gamePlayers);
+    gamePlayers.push(data.games.gamePlayers);
     console.log(gamePlayers);
     console.log(data);
     console.log(allShips);

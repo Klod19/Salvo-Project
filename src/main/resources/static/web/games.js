@@ -9,25 +9,24 @@ const login_title = $("#login_title")
 const welc_msg = $("#welc_msg");
 const modal = $("#myModal");
 const player_name = $("#player_name");
+const newGame_btn = $("#newG_btn");
 let name = "";
+let allGames=[];
+
 //on the page load, check if there is a cookie
+//AND MAKE THE GODDAMN LIST
 $(document).ready(function() {
     checkCookie()
+    console.log(document.cookie.split("=")[0]);
+    let name = getCookie("userName");
+    player_name.html(name.split("@")[0]);
+    callGames(name);
 });
 
-let allGames=[];
-$.ajax("/api/games").done(function(data) {
-    allGames = data.games;
-    console.log(allGames);
-    let name = "";
-    makeList(allGames, name);
-    }).fail(function(){
-        alert(data.statusText);
-});
 
 $("#sign_in_popup").click(function(){
     $(".modal-dialog").show();
-})
+});
 
 logIn_btn.click(function(){
     login(event)
@@ -35,11 +34,15 @@ logIn_btn.click(function(){
 
 signIn_btn.click(function() {
     signIn(event);
-})
+});
 
 logout_btn.click(function(){
     logout(event);
-})
+});
+
+newGame_btn.click(function(){
+    createGame(event);
+});
 
 //functions to manage login
 function login(evt) {
@@ -51,17 +54,12 @@ function login(evt) {
           password: form["password"].value })
         .done(function(){
             let current_user = form["userName"].value
-            $.ajax("/api/games").done(function(data) {
-                allGames = data.games
-                console.log(allGames);
-                console.log(current_user);
-                makeList(allGames, current_user);
-            })
+            callGames(current_user);
             alert("welcome!"),
             //get the name, get rid of the @, take the first part of the name
             name = (form["userName"].value).split("@")[0];
             console.log(name);
-            setCookie("userName", name, 365)
+            setCookie("userName",form["userName"].value, 365);
             form["userName"].value = "",
             form["password"].value = "",
             welc_msg.hide(),
@@ -112,13 +110,8 @@ function logout(evt) {
                 //the following line deletes the cookie
                     document.cookie = "userName=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
                     alert("Successfully logged out"),
-                    logout_form.hide(),
-                    player_name.text("");
-                    welc_msg.show(),
-                    login_title.show(),
-                    login_form.show(),
-                    logIn_btn.show();
-                    signIn_p.show();
+                    //reload the page;
+                    location.reload();
         })
 
         .fail(function(){
@@ -133,6 +126,7 @@ function setCookie(cname, cvalue, exdays) {
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     var expires = "expires="+d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    console.log(document.cookie);
 }
 
 //the following returns the value of a specified cookie
@@ -171,38 +165,62 @@ function checkCookie() {
     }
 }
 
-//THE FOLLOWING DOESNT WORK; often the content doesn't get appended in the anchor;
-//THE BACKUP FUNCTION BELOW WORKS
+function callGames(current_user){
+    $.ajax("/api/games").done(function(data) {
+        allGames = data.games
+        console.log(allGames);
+        console.log(current_user);
+        makeList(allGames, current_user);
+    })
+}
+
+//function to create a new game
+function createGame (evt) {
+    evt.preventDefault();
+    $.post("/api/games")
+        .done(function(response){
+            alert("done" + response.toString());
+            let current_user = "";
+            console.log(document.cookie);
+            location.reload();
+        })
+
+        .fail(function(response){
+            alert("ERROR" + response.responseText)
+        })
+
+
+}
+
+//TRY WITH MAP AND FILTER, DOESN'T WORK
 // function makeList(array, current_userName){
 //     array.forEach(function(game){
 //         let listElement = $("<li>")
 //         let date = new Date(game.created);//converts milliseconds to PRECISE date, with GMT
 //         // add users emails: make an array with the usernames AND make it into one string with .join()
 //         let gamePlayersArray = game.gamePlayers;
+//         console.log(gamePlayersArray);
 //         let userNames= "";
 //         let gpId = "";
 //         let playersArray=[];
-//         let url = "http://localhost:8080/web/game.html?gp="
+//         gamePlayersArray.map(gp => playersArray.push(gp.player.userName));
+//         gamePlayersArray.filter(gp => gp.player.userName = current_userName ? gpId = gp.player.gpId : 0);
+//         console.log(gpId);
+//         userNames = playersArray.join(", ");
+//         let url = "http://localhost:8080/web/game.html?gp=" + gpId
+//         // date-toLocaleString() converts the date to a local date, with time too
 //         let content = $("<p>");
-//         gamePlayersArray.forEach(function(gp){
-//             playersArray.push(gp.player.userName);
-//             userNames = playersArray.join(", ");
-//             // date-toLocaleString() converts the date to a local date, with time too
-//             content.html(date.toLocaleString() + " " + userNames);
-//             if(playersArray.includes(current_userName) && current_userName == gp.player.userName ){
-//                 console.log("WORKS!");
-//                 console.log(current_userName);
-//                 gpId = gp.player.gpId;
-//                 console.log("gpId: " + gpId);
-//                 url = url + gpId
-//                 let anchor = $("<a href =' " + url + " ' > ");
-//                 anchor.append(content)
-//                 listElement.append(anchor);
-//             }
-//             else{
-//                 listElement.append(content);
-//             }
-//         })
+//         content.html(date.toLocaleString() + " " + userNames);
+//         if(playersArray.includes(current_userName /*i.e. the form[userName].value*/)){
+//             console.log("WORKS")
+//             console.log(url);
+//             let anchor = $("<a href =' " + url + " ' > ");
+//             anchor.append(content)
+//             listElement.append(anchor);
+//         }
+//         else{
+//             listElement.append(content);
+//         }
 //         $("#list").append(listElement);
 //
 //     })
@@ -212,10 +230,11 @@ function checkCookie() {
 
 
 
-//BACKUP
+//THIS WORKS, but is long
 function makeList(array, current_userName){
+    $("#list").empty();
     array.forEach(function(game){
-        let listElement = $("<li>")
+        let listElement = $("<li>");
         let date = new Date(game.created);//converts milliseconds to PRECISE date, with GMT
         // add users emails: make an array with the usernames AND make it into one string with .join()
         let gamePlayersArray = game.gamePlayers;
@@ -236,16 +255,15 @@ function makeList(array, current_userName){
         let content = $("<p>");
         content.html(date.toLocaleString() + " " + userNames);
         if(playersArray.includes(current_userName /*i.e. the form[userName].value*/)){
-            console.log("WORKS")
-            console.log(url);
             let anchor = $("<a href =' " + url + " ' > ");
-            anchor.append(content)
+            anchor.append(content);
             listElement.append(anchor);
+            $("#list").prepend(listElement);
         }
-        else{
+        //if there's no active cookie, show a list of all games
+        if (document.cookie == "") {
             listElement.append(content);
+            $("#list").prepend(listElement);
         }
-        $("#list").append(listElement);
-
     })
 }

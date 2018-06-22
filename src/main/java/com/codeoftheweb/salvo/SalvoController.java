@@ -41,6 +41,7 @@ public class SalvoController {
         return currentP_and_Games;
     }
 
+    // current player, based on instances of Authentication class (from Spring)
     public Player currentPlayer (Authentication authentication) {
         Player current_p = new Player();
         if (! (authentication == null || authentication instanceof AnonymousAuthenticationToken)){
@@ -135,6 +136,21 @@ public class SalvoController {
 //                .collect(toList());
 //    }
 
+    //method to create a new game (post)
+    @RequestMapping(path ="/games", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> createNewGame (Authentication authentication) {
+        if ( authentication == null){
+            return new ResponseEntity<>(makeMap("error", "NO PLAYER LOGGED IN!"), HttpStatus.UNAUTHORIZED);
+        }
+        else{
+            //save new game and new gameplayer in the matching repositories; return a response
+            Game newGame = new Game();
+            repo.save(newGame);
+            GamePlayer newGamePlayer = new GamePlayer(currentPlayer(authentication), newGame);
+            gp_repo.save(newGamePlayer);
+            return new ResponseEntity<>(makeMap("gpId", newGamePlayer.getId()), HttpStatus.CREATED);
+        }
+    }
 
     @RequestMapping("/scores_list")
     public Map<String, Object> getPoints(){
@@ -169,81 +185,69 @@ public class SalvoController {
         return allPlayers;
     }
 
-    @RequestMapping("/game_view/{gamePlayerId}")
-    public Map<String, Object> getGameByGp(@PathVariable Long gamePlayerId) {
-        //@PathVariable UPDATES the gamePlayerId with the value given by the URL; then i use
-        //the gamePlayerId in the method
-
-        //we'll return the following:
-        Map<String, Object> gameInfo = new LinkedHashMap<>();
-
-        // 1) either find all the gamePlayers, and then loop through them
-//        List <GamePlayer> allGamePlayers = gp_repo.findAll();
-//        for (int i =0; i < allGamePlayers.size(); i++){
-//            if(allGamePlayers.get(i).getId() == gamePlayerId) {
-//                Game current_game = allGamePlayers.get(i).getGame();
-//                Set<GamePlayer> gps = current_game.getGamePlayers();
-//                List<GamePlayer> gps_list = new ArrayList<>(gps);
-//                gameInfo.put("id", current_game.getId());
-//                gameInfo.put("created", current_game.getDate());
-//                gameInfo.put("gamePlayer", gps_list.stream()
-//
-//                        .map(gp -> gpInfo(gp))
-//
-//                        .collect(toList()));
-//            }
-//        }
-
-        // 2) or find one gamePlayer by id with .findOne(id), and then work with it
+    @RequestMapping(path = "/game_view/{gamePlayerId}",  method = RequestMethod.GET)
+    //@PathVariable UPDATES the gamePlayerId with the value given by the URL; then i use
+    //the gamePlayerId in the method
+    public ResponseEntity <Map<String,Object >> getGameByGp(@PathVariable Long gamePlayerId, Authentication authentication) {
+        // we need to check if the authenticated user may access the page:
+        //so check if current player userName == to the current gamePlayer, got through its id
         GamePlayer current_gp = gp_repo.findOne(gamePlayerId);
-        Game current_game = current_gp.getGame();
-        gameInfo.put("id", current_game.getId());
-        gameInfo.put("created", current_game.getId());
-        //I want the current gamePlayer id and the current player userName
-        gameInfo.put("current gamePlayer Id", current_gp.getId());
-        gameInfo.put("current Player userName", current_gp.getPlayer().getUserName());
+        if (!(current_gp.getPlayer().getUserName()).equals(currentPlayer(authentication).getUserName())){
+            return new ResponseEntity<>(makeMap("error", "UNAUTHORIZED"), HttpStatus.UNAUTHORIZED);
+        }
+        else{
+            //we'll return the following:
+            Map<String, Object> gameInfo = new LinkedHashMap<>();
+            // Find one gamePlayer by id with .findOne(id), and then work with it
+            Game current_game = current_gp.getGame();
+            gameInfo.put("id", current_game.getId());
+            gameInfo.put("created", current_game.getId());
+            //I want the current gamePlayer id and the current player userName
+            gameInfo.put("current gamePlayer Id", current_gp.getId());
+            gameInfo.put("current Player userName", current_gp.getPlayer().getUserName());
 
-        //now get the 2 gamePlayers from the current game, then add their data to gameInfo
-        //I get the gamePlayers of a Game in a Set collection
-        Set<GamePlayer> gps = current_game.getGamePlayers();
-        //I need to turn this Set into a List
-        List <GamePlayer> gps_list = new ArrayList<>(gps);
-        //now I have to add the gamePlayers, filtering the data I need (their Id and the Map "player")
-        gameInfo.put("gamePlayers", gps_list.stream()
+            //now get the 2 gamePlayers from the current game, then add their data to gameInfo
+            //I get the gamePlayers of a Game in a Set collection
+            Set<GamePlayer> gps = current_game.getGamePlayers();
+            //I need to turn this Set into a List
+            List <GamePlayer> gps_list = new ArrayList<>(gps);
+            //now I have to add the gamePlayers, filtering the data I need (their Id and the Map "player")
+            gameInfo.put("gamePlayers", gps_list.stream()
 
-                                   .map(gp -> gpInfo(gp))
+                    .map(gp -> gpInfo(gp))
 
-                                   .collect(toList()));
+                    .collect(toList()));
 
-        //this method needs ships too
-        List <Map> shipsInfo = new LinkedList<>(); //this one is probably useless
-        Set<Ship> ships_set = current_gp.getShips();
-        gameInfo.put("ships", ships_set.stream()
+            //this method needs ships too
+            List <Map> shipsInfo = new LinkedList<>(); //this one is probably useless
+            Set<Ship> ships_set = current_gp.getShips();
+            gameInfo.put("ships", ships_set.stream()
 
-                              .map(s -> getShipsInfo(s))
+                    .map(s -> getShipsInfo(s))
 
-                              .collect(toList()));
+                    .collect(toList()));
 
-        //we need to add salvoes too!
-        Set <GamePlayer> two_current_gp = current_game.getGamePlayers();
+            //we need to add salvoes too!
+            Set <GamePlayer> two_current_gp = current_game.getGamePlayers();
 
-        two_current_gp.stream().map(cgp -> cgp.getSalvoes());
-        Map <String, Object> one_salvo = new LinkedHashMap<>();
+            two_current_gp.stream().map(cgp -> cgp.getSalvoes());
+            Map <String, Object> one_salvo = new LinkedHashMap<>();
 
-        //alternative 1, doesn't work
-        Set<Set<Salvo>> salvoes_set = two_current_gp.stream().map(cgp -> cgp.getSalvoes())
-                .collect(Collectors.toSet());
+            //alternative 1, doesn't work
+            Set<Set<Salvo>> salvoes_set = two_current_gp.stream().map(cgp -> cgp.getSalvoes())
+                    .collect(Collectors.toSet());
 
 
-        gameInfo.put("salvoes",  salvoes_set.stream()
+            gameInfo.put("salvoes",  salvoes_set.stream()
 
-                                .map(sl -> sl.stream()
-                                        .map(salvo1 -> getSalvoInfo(salvo1))
-                                        .collect(toList()))
+                    .map(sl -> sl.stream()
+                            .map(salvo1 -> getSalvoInfo(salvo1))
+                            .collect(toList()))
 
-                                .collect(toList()));
+                    .collect(toList()));
 
-        return gameInfo;
+            return new ResponseEntity<>(makeMap("games",gameInfo), HttpStatus.ACCEPTED);
+        }
 
       //!! METHOD END !!!!
     }
@@ -264,34 +268,12 @@ public class SalvoController {
         Player newPlayer = p_repo.save(new Player(userName, password));
         return new ResponseEntity<>(makeMap(userName, newPlayer.getId()) , HttpStatus.CREATED);
     }
-
+    // a method to visualize a return Map
     private Map<String, Object> makeMap(String key, Object value) {
         Map<String, Object> map = new HashMap<>();
         map.put(key, value);
         return map;
     }
-
-
-
-//    @RequestMapping("api/players")
-//    public List<Map> register_players (String userName, String password){
-//        List<Map> registered_pl = new LinkedList<>();
-//        Map<String, Object> pl = new HashMap<>();
-//        List <Player> allPlayers = p_repo.findAll();
-//        Player player = new Player(userName, password);
-//        Long id = player.getId();
-//        if ( allPlayers.contains(player)){
-//
-//        }
-//        else{
-//            p_repo.save(player);
-//            pl.put("userName", player.getUserName());
-//            pl.put("password", player.getPassword());
-//            registered_pl.add(pl);
-//        }
-//        return registered_pl;
-//    }
-
 
 }
 

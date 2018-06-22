@@ -12,5 +12,4 @@ import java.util.List;
 public interface PlayerRepository extends JpaRepository<Player, Long> {
     //I don't get this line; what is @Param(" ")?
     Player findByUserName(@Param("userName") String userName);
-
 }
