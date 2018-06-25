@@ -21,6 +21,7 @@ $(document).ready(function() {
     let name = getCookie("userName");
     player_name.html(name.split("@")[0]);
     callGames(name);
+
 });
 
 
@@ -44,7 +45,6 @@ newGame_btn.click(function(){
     createGame(event);
 });
 
-//functions to manage login
 function login(evt) {
     // why do i need to call event.preventDefault()???
     evt.preventDefault();
@@ -170,7 +170,15 @@ function callGames(current_user){
         allGames = data.games
         console.log(allGames);
         console.log(current_user);
-        makeList(allGames, current_user);
+        makeList(allGames, current_user)
+        // THE FUNCTION TO TRIGGER THE EVENT "JOIN GAME" MUST BE DONE HERE!!
+        //BECAUSE OF ASYNCRONOUS AJAX CALL: "makeList" makes the list BEFORE the Ajax call is finished;
+        // so it's like the created button doesn't get the class "join_btns"
+        let joinBtn = $(".join_btns");
+        joinBtn.click(function (){
+            joinGame(event, current_user)
+        })
+
     })
 }
 
@@ -179,7 +187,7 @@ function createGame (evt) {
     evt.preventDefault();
     $.post("/api/games")
         .done(function(response){
-            alert("done" + response.toString());
+            alert("done" + response.responseText);
             let current_user = "";
             console.log(document.cookie);
             location.reload();
@@ -192,48 +200,36 @@ function createGame (evt) {
 
 }
 
-//TRY WITH MAP AND FILTER, DOESN'T WORK
-// function makeList(array, current_userName){
-//     array.forEach(function(game){
-//         let listElement = $("<li>")
-//         let date = new Date(game.created);//converts milliseconds to PRECISE date, with GMT
-//         // add users emails: make an array with the usernames AND make it into one string with .join()
-//         let gamePlayersArray = game.gamePlayers;
-//         console.log(gamePlayersArray);
-//         let userNames= "";
-//         let gpId = "";
-//         let playersArray=[];
-//         gamePlayersArray.map(gp => playersArray.push(gp.player.userName));
-//         gamePlayersArray.filter(gp => gp.player.userName = current_userName ? gpId = gp.player.gpId : 0);
-//         console.log(gpId);
-//         userNames = playersArray.join(", ");
-//         let url = "http://localhost:8080/web/game.html?gp=" + gpId
-//         // date-toLocaleString() converts the date to a local date, with time too
-//         let content = $("<p>");
-//         content.html(date.toLocaleString() + " " + userNames);
-//         if(playersArray.includes(current_userName /*i.e. the form[userName].value*/)){
-//             console.log("WORKS")
-//             console.log(url);
-//             let anchor = $("<a href =' " + url + " ' > ");
-//             anchor.append(content)
-//             listElement.append(anchor);
-//         }
-//         else{
-//             listElement.append(content);
-//         }
-//         $("#list").append(listElement);
-//
-//     })
-// }
 
+//FUNCTION TO JOIN A GAME
+function joinGame(evt, current_user) {
+        evt.preventDefault();
+        let my_target = event.target;
+        let gameId = $(my_target).data("gameid");
+        console.log(gameId);
+        $.post("/api/game/" + gameId + "/players")
+            .done(function(data){
+                //from the backend, the returned response is a JSON file {gpId : nn}
+                window.location.href="http://localhost:8080/web/game.html?gp=" + data.gpId;
+            })
+            .fail(function(response){
+                if (current_user ==  ""){
+                    alert("LOG IN BEFORE JOINING A GAME!")
+                }
+                else{
+                    alert(" ERROR IN JOINING THE GAME!" + response.responseText);
+                }
+            })
+}
 
-
-
-
-//THIS WORKS, but is long
+//THIS MAKES A LIST OF THE GAMES
 function makeList(array, current_userName){
     $("#list").empty();
+    //"array" is an array of games
     array.forEach(function(game){
+        // join button as button
+        let joinBtn = $("<button>").attr({"data-gameId": game.id, class: "join_btns", id: game.id});
+        joinBtn.html("join this game");
         let listElement = $("<li>");
         let date = new Date(game.created);//converts milliseconds to PRECISE date, with GMT
         // add users emails: make an array with the usernames AND make it into one string with .join()
@@ -243,9 +239,7 @@ function makeList(array, current_userName){
         let playersArray=[];
         gamePlayersArray.forEach(function(gp){
             playersArray.push(gp.player.userName);
-            console.log(current_userName);
             if(/*playersArray.includes(current_userName) &&*/ current_userName == gp.player.userName ){
-                console.log(current_userName);
                 gpId = gp.player.gpId;
             }
             userNames = playersArray.join(", ");
@@ -253,8 +247,17 @@ function makeList(array, current_userName){
         let url = "http://localhost:8080/web/game.html?gp=" + gpId
         // date-toLocaleString() converts the date to a local date, with time too
         let content = $("<p>");
-        content.html(date.toLocaleString() + " " + userNames);
-        if(playersArray.includes(current_userName /*i.e. the form[userName].value*/)){
+        content.html(date.toLocaleString() + ";" + " " + userNames);
+        let string = content.html().split(";")[1];
+        //condition to render join buttons only beside games with 1 player(regardless of login status)
+        if (string.indexOf(",") == -1 && ! playersArray.includes(current_userName)){
+            content.append(joinBtn);
+            // listElement.append(joinBtn);
+            listElement.append(content)
+            $("#list").prepend(listElement);
+        }
+        //condition to render links to games only for the relative players
+        if(playersArray.includes(current_userName)){
             let anchor = $("<a href =' " + url + " ' > ");
             anchor.append(content);
             listElement.append(anchor);

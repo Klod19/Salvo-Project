@@ -32,6 +32,15 @@
     float:right;
 }
 
+#newG_btn{
+    margin-left:10px;
+    margin-bottom:10px;
+}
+
+.join{
+    margin-left:10px ;
+}
+
 th{
     width:50px !important;
     height:50px !important;

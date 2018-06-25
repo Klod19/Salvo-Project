@@ -186,7 +186,7 @@ public class SalvoController {
     }
 
     @RequestMapping(path = "/game_view/{gamePlayerId}",  method = RequestMethod.GET)
-    //@PathVariable UPDATES the gamePlayerId with the value given by the URL; then i use
+    //@PathVariable UPDATES the gamePlayerId with the value given by the URL; then I use
     //the gamePlayerId in the method
     public ResponseEntity <Map<String,Object >> getGameByGp(@PathVariable Long gamePlayerId, Authentication authentication) {
         // we need to check if the authenticated user may access the page:
@@ -254,6 +254,7 @@ public class SalvoController {
 
     // METHOD TO CREATE A NEW USER!!!!
     @RequestMapping(path = "/players", method = RequestMethod.POST)
+    //@RequestParam annotation used for accessing the query parameter values from the request
     public ResponseEntity<Map<String, Object>> createUser(@RequestParam String userName, String password) {
         //if no name is given:
         if (userName.isEmpty()) {
@@ -268,6 +269,34 @@ public class SalvoController {
         Player newPlayer = p_repo.save(new Player(userName, password));
         return new ResponseEntity<>(makeMap(userName, newPlayer.getId()) , HttpStatus.CREATED);
     }
+
+    //METHOD TO JOIN A GAME
+    @RequestMapping(path = "/game/{gameId}/players",  method = RequestMethod.POST)
+    // I request a path variable to obtain the placeholder from the URL; it binds the URL request template
+    public ResponseEntity<Map<String, Object>> joinGame(@PathVariable Long gameId, Authentication authentication) {
+        //GET CURRENT USER
+        Player current_player = currentPlayer(authentication);
+        //NO CURRENT USER?
+        if (current_player == null) {
+            return new ResponseEntity<>(makeMap("ERROR", "NO LOGGED-IN USER"), HttpStatus.UNAUTHORIZED);
+        }
+        //GET THE GAME WITH THE ID; look for it in the game repository, using repository.findOne(Long id);
+        Game current_game = repo.findOne(gameId);
+        //NO SUCH A GAME?
+        if(current_game == null){
+            return new ResponseEntity<>(makeMap("ERROR", "THERE IS NO SUCH A GAME"), HttpStatus.FORBIDDEN );
+        }
+        //CHECK THAT THIS GAME HAS ONLY 1 PLAYER
+        if (current_game.getGamePlayers().stream().count() == 2){
+            return new ResponseEntity<>(makeMap("ERROR","GAME ALREADY FULL"), HttpStatus.FORBIDDEN);
+        }
+        //EVERYTHING OK? MAKE A NEW GAMEPLAYER, WITH CURRENT PLAYER + CURRENT GAME, AND SAVE IT
+        GamePlayer newGamePlayer = new GamePlayer(current_player, current_game);
+        gp_repo.save(newGamePlayer);
+        return new ResponseEntity<>(makeMap("gpId", newGamePlayer.getId()), HttpStatus.CREATED);
+    }
+
+
     // a method to visualize a return Map
     private Map<String, Object> makeMap(String key, Object value) {
         Map<String, Object> map = new HashMap<>();
@@ -276,4 +305,5 @@ public class SalvoController {
     }
 
 }
+
 
