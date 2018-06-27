@@ -127,28 +127,28 @@ function get_coordinates(coord, salvoes_array){
         var one_salvo_cell = $("#salvo_cell"+c);
         $(one_cell).css("background-color", "grey");
 
-        salvoes_array.forEach(function(s){
-            s.locations.forEach(function(lo, index){
-                if(s.gamePlayer_id == pageId){
-                    var my_salvo = $("#salvo_cell"+lo);
-                    my_salvo.css("background-color", "blue");
-                    my_salvo.html(s.turn);
-                }
-                if (s.gamePlayer_id != pageId ){
-                    var missed = $("#"+lo);
-                    $(missed).css("background-color", "aquamarine");
-                    $(missed).html(s.turn)
-                    if (lo == $(one_cell).attr("id")){
-                        //don't do the following with divs, make a class "ship" instead
-                        // var hit = $("<div>").attr("class", "hit");
-                        // $(hit).html(s.turn);
-                        // $(one_cell).append(hit);
-                        $(one_cell).attr("class", "hit");
-                        $(one_cell).html(s.turn);
-                    }
-                }
-            })
-        });
+        // salvoes_array.forEach(function(s){
+        //     s.locations.forEach(function(lo, index){
+        //         if(s.gamePlayer_id == pageId){
+        //             var my_salvo = $("#salvo_cell"+lo);
+        //             my_salvo.css("background-color", "blue");
+        //             my_salvo.html(s.turn);
+        //         }
+        //         if (s.gamePlayer_id != pageId ){
+        //             var missed = $("#"+lo);
+        //             $(missed).css("background-color", "aquamarine");
+        //             $(missed).html(s.turn)
+        //             if (lo == $(one_cell).attr("id")){
+        //                 //don't do the following with divs, make a class "ship" instead
+        //                 // var hit = $("<div>").attr("class", "hit");
+        //                 // $(hit).html(s.turn);
+        //                 // $(one_cell).append(hit);
+        //                 $(one_cell).attr("class", "hit");
+        //                 $(one_cell).html(s.turn);
+        //             }
+        //         }
+        //     })
+        // });
     });
 
     // salvoes_array.forEach(function(ms){

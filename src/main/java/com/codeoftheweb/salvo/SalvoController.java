@@ -27,6 +27,7 @@ public class SalvoController {
     private GamePlayerRepository gp_repo;
     @Autowired
     private PlayerRepository p_repo;
+    @Autowired ShipRepository ship_repo;
 
     @RequestMapping("/games")
     // make a method to show current player + games in a JSON object
@@ -296,14 +297,46 @@ public class SalvoController {
         return new ResponseEntity<>(makeMap("gpId", newGamePlayer.getId()), HttpStatus.CREATED);
     }
 
+    //METHOD TO PLACE SHIPS
+    @RequestMapping(value = "/games/players/{gamePlayerId}/ships", method = RequestMethod.POST)
+    public ResponseEntity<List<Object>> addShips (@RequestBody List<Ship> ships, @PathVariable Long gamePlayerId, Authentication authentication){
+        //an empty list that will contain the ships to return
+        List shipsList = new LinkedList();
+        Player current_player= currentPlayer(authentication);
+        GamePlayer current_gameplayer = gp_repo.findOne(gamePlayerId);
+        //NO user logged in? no gamePlayer with given id? current user is not the gamePlayer the id refers to?
+        if (current_player == null || current_gameplayer == null ||  !(current_gameplayer.getPlayer() == current_player)){
+            return new ResponseEntity<>(makeList(makeMap("ERROR", "UNAUTHORIZED!")), HttpStatus.UNAUTHORIZED);
+        }
+        //the user has already placed the ships?
+        if (! current_gameplayer.getShips().isEmpty()) {
+            return new ResponseEntity<>(makeList(makeMap("ERROR", "SHIPS ALREADY PLACED!")), HttpStatus.FORBIDDEN);
+        }
+        // i dont need to create new ships, i use those from JSON
+        ships.stream().forEach(s -> saveShipsInRepo(s, current_gameplayer));
 
-    // a method to visualize a return Map
+        return new ResponseEntity<>(shipsList, HttpStatus.CREATED);
+    }
+
+    //function to make a new ship out of the "ship" data taken from JSON; it's be used in the addShips method;
+    private void saveShipsInRepo (Ship ship, GamePlayer gamePlayer){
+        gamePlayer.addShip(ship);
+        ship_repo.save(ship);
+    }
+
+    // a method to make a return Map, used with Response Entity
     private Map<String, Object> makeMap(String key, Object value) {
         Map<String, Object> map = new HashMap<>();
         map.put(key, value);
         return map;
     }
 
+    //a method to make a return List, used with Response Entity
+    private List <Object> makeList(Object map){
+        List <Object> list = new LinkedList<>();
+        list.add(map);
+        return list;
+    }
 }
 
 

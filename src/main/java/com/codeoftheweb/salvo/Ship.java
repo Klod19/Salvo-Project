@@ -67,9 +67,10 @@ public class Ship {
     //IMPORTANT!!!! adding a single string and then splitting is overly complicated; add ann array
     // of strings instead
     public void addLocation(List<String> coordinates){
+        locations = coordinates;
+
 //        locations.add(coordinates);
 //        List<String> locations = Arrays.asList(new String[]{"John", "Mary", "Bill"});
-        locations = coordinates;
         //IMPORTANT! THE FOLLOWING IS OBSOLETE( was to resize the string according to its length
         //split the string "coordinates" using a regular expression;
         //String[] tool = coordinates.split("(?<=\\G.{2})");

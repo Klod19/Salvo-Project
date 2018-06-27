@@ -53,9 +53,9 @@ function login(evt) {
         { userName: form["userName"].value,
           password: form["password"].value })
         .done(function(){
-            let current_user = form["userName"].value
+            let current_user = form["userName"].value;
             callGames(current_user);
-            alert("welcome!"),
+            alert("welcome!");
             //get the name, get rid of the @, take the first part of the name
             name = (form["userName"].value).split("@")[0];
             console.log(name);
@@ -222,7 +222,7 @@ function joinGame(evt, current_user) {
             })
 }
 
-//THIS MAKES A LIST OF THE GAMES
+//THE FOLLOWING FUNCTION MAKES A LIST OF THE GAMES
 function makeList(array, current_userName){
     $("#list").empty();
     //"array" is an array of games
