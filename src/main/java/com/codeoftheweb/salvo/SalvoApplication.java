@@ -56,6 +56,7 @@ public class SalvoApplication {
 			Game game4 = new Game();
 			Game game5 = new Game();
 			Game game6 = new Game();
+			Game game7 = new Game();
 			//change the creation date of the games
 			game1.getDate();
 			//the following line returns the same date as the one above
@@ -81,6 +82,7 @@ public class SalvoApplication {
 			GamePlayer gamePlayer10 = new GamePlayer(player2, game5);
 			GamePlayer gamePlayer11 = new GamePlayer(player1, game6);
 			GamePlayer gamePlayer12 = new GamePlayer(player5, game6);
+			GamePlayer gamePlayer13 = new GamePlayer(player4, game7);
 
 
 
@@ -206,6 +208,7 @@ public class SalvoApplication {
 			gameRepository.save(game4);
 			gameRepository.save(game5);
 			gameRepository.save(game6);
+			gameRepository.save(game7);
 
 			gamePlayerRepository.save(gamePlayer1);
 			gamePlayerRepository.save(gamePlayer2);
@@ -219,6 +222,7 @@ public class SalvoApplication {
 			gamePlayerRepository.save(gamePlayer10);
 			gamePlayerRepository.save(gamePlayer11);
 			gamePlayerRepository.save(gamePlayer12);
+			gamePlayerRepository.save(gamePlayer13);
 
 			//save the ships
 			shipRepository.save(ship1);

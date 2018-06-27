@@ -79,3 +79,30 @@ td{
 
 }
 
+#ships_info_container{
+    margin-left: 25px;
+    margin-top: 50px;
+}
+
+.ship_blocks {
+    border-radius: 50%;
+    background-color:grey;
+    height:20px;
+    width:20px;
+    margin-right: 5px;
+    margin-bottom:5px;
+}
+
+.info_container{
+    margin-bottom: 10px;
+}
+
+.blocks_container{
+    display:flex;
+    flex-direction: row;
+}
+
+.activate{
+    background-color: red;
+}
+

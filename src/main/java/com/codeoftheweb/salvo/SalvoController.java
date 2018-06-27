@@ -314,8 +314,17 @@ public class SalvoController {
         }
         // i dont need to create new ships, i use those from JSON
         ships.stream().forEach(s -> saveShipsInRepo(s, current_gameplayer));
-
+        System.out.println(ships);
         return new ResponseEntity<>(shipsList, HttpStatus.CREATED);
+    }
+
+    //method to see a json of the stuff above; looks like it doesn't work
+    @RequestMapping(value = "/games/players/{gamePlayerId}/ships", method = RequestMethod.GET)
+    public List<Object> shipsList (@PathVariable Long gamePlayerId){
+        List<Object> gp_ships = new LinkedList<>();
+        GamePlayer current_gameplayer = gp_repo.findOne(gamePlayerId);
+        current_gameplayer.getShips().stream().forEach(s -> gp_ships.add(s));
+        return gp_ships;
     }
 
     //function to make a new ship out of the "ship" data taken from JSON; it's be used in the addShips method;

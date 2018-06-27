@@ -1,6 +1,3 @@
-// array to fill the header;
-var num_array = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-var ltrs_array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 
 //FIRST OF ALL:
 // GET THE PAGE "gp" PARAMETER, IN ORDER TO USE IT FOR AJAX CALL; 3 WAYS
@@ -76,80 +73,135 @@ console.log(par);
 //get the pageId from the parameter obtained earlier
 // var pageId =  page_param.gp;
 
+// the following 2 :arrays to fill the header;
+var num_array = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+var ltrs_array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+
 var pageId = par;
 console.log("PAGE ID:" + pageId);
 var allShips =[];
 var loc_array=[];
 var gamePlayers =[];
-var salvoesArray =[]
-$.ajax("/api/game_view/" + pageId).done(function(data){
-    console.log(data);
-    allShips.push(data.games.ships);
-    salvoesArray.push(data.games.salvoes);
-    //salvoesArray is an array of 2 arrays of objects; let's concatenate the 2 arrays of objects:
-    var allSalvoes = salvoesArray[0][0].concat(salvoesArray[0][1]);
-    console.log(allSalvoes);
-    gamePlayers.push(data.games.gamePlayers);
-    console.log(gamePlayers);
-    console.log(data);
-    console.log(allShips);
-    //call the functions to make the empty grid
-    renderHeaders();
-// renderRows();
-    makeTable();
-    //call the functions to place the ships+the salvoes made by the opponent
-    getLocations(allShips, allSalvoes);
-    //call the function to render the two players' names
-    getPlayers(gamePlayers[0]);
-}).fail(function(){
-    alert("ERROR DATA NOT RETRIEVED")
+var salvoesArray =[];
+
+// array of objects to make a list of ships to be placed:
+const ships_to_place = [
+    {type: "Carrier", blocks: 5},
+    {type: "Battleship", blocks: 4},
+    {type: "Destroyer", blocks: 3},
+    {type: "Submarine", blocks: 3},
+    {type: "Patrol Boat", blocks: 2}
+];
+
+ships_to_place.map(obj => makeButtons(obj));
+
+function makeButtons (object){
+   let info_container = $("<div>").attr({class: "info_container"});
+   let div_type = $("<div>").html(object.type);
+   info_container.append(div_type);
+   let blocks_container = $("<div>").attr({class: "blocks_container"});
+   for (let i = 0; i < object.blocks; i++){
+       let div_block = $("<div>").attr({class: "ship_blocks", id: object.type + "_block_" + i });
+       blocks_container.append(div_block);
+       info_container.append(blocks_container);
+   }
+   $("#ships_info_container").append(info_container);
+
+}
+
+$(".info_container").click(function(){
+    $(this).toggleClass("activate");
+
 });
+
+$.ajax("/api/game_view/" + pageId).done(function(data){
+        console.log(data);
+        allShips.push(data.games.ships);
+        salvoesArray.push(data.games.salvoes);
+        //salvoesArray is an array of 2 arrays of objects; let's concatenate the 2 arrays of objects:
+        var allSalvoes = salvoesArray[0][0].concat(salvoesArray[0][1]);
+        console.log(allSalvoes);
+        gamePlayers.push(data.games.gamePlayers);
+        console.log(gamePlayers);
+        console.log(data);
+        console.log(allShips);
+        //call the functions to make the empty grid
+        renderHeaders();
+// renderRows();
+        makeTable();
+        //call the functions to place the ships+the salvoes made by the opponent
+        getLocations(allShips, allSalvoes);
+        //call the function to render the two players' names
+        getPlayers(gamePlayers[0]);
+    }).fail(function(){
+        alert("ERROR DATA NOT RETRIEVED")
+});
+
+
 
 //following: the 3 functions to place the ships
 function getLocations(ships_array, salvoes_array){
-    for (var i=0; i<3; i++){
-        var loc = ships_array.map(s => s[i].location);
-        console.log(loc);
-        loc_array.push(loc);
-    }
+    ships_array[0].map(s => loc_array.push(s.location));
     placeShips(loc_array, salvoes_array);
-    console.log(loc_array);
+
 }
 
 function placeShips(array, salvoes_array){
-    array.map(l => l.map(coord => get_coordinates(coord, salvoes_array)));
+    array.map(l => get_coordinates(l, salvoes_array));
 }
 
-function get_coordinates(coord, salvoes_array){
+function get_coordinates(coord, salvoes_array) {
+    console.log(coord);
     //SIMPLE SOLUTION WITH EASIER COORDINATES
-    coord.forEach(function(c){
-        var one_cell = $("#"+c);
-        var one_salvo_cell = $("#salvo_cell"+c);
+    coord.forEach(function (c) {
+        var one_cell = $("#" + c);
+        var one_salvo_cell = $("#salvo_cell" + c);
         $(one_cell).css("background-color", "grey");
+        // if there are no salvoes yet (start-game situation) the following function is not triggered
+        if (salvoes_array[0] != undefined) {
+            salvoes_array.forEach(function (s) {
+                s.locations.forEach(function (lo) {
+                    s.gamePlayer_id == pageId ? show_my_missed(lo, s) : show_missed_and_hits(lo, s, one_cell);
 
-        salvoes_array.forEach(function(s){
-            s.locations.forEach(function(lo, index){
-                if(s.gamePlayer_id == pageId){
-                    var my_salvo = $("#salvo_cell"+lo);
-                    my_salvo.css("background-color", "blue");
-                    my_salvo.html(s.turn);
-                }
-                if (s.gamePlayer_id != pageId ){
-                    var missed = $("#"+lo);
-                    $(missed).css("background-color", "aquamarine");
-                    $(missed).html(s.turn)
-                    if (lo == $(one_cell).attr("id")){
-                        //don't do the following with divs, make a class "ship" instead
-                        // var hit = $("<div>").attr("class", "hit");
-                        // $(hit).html(s.turn);
-                        // $(one_cell).append(hit);
-                        $(one_cell).attr("class", "hit");
-                        $(one_cell).html(s.turn);
-                    }
-                }
-            })
-        });
+                    // if(s.gamePlayer_id == pageId){
+                    //     var my_salvo = $("#salvo_cell"+lo);
+                    //     my_salvo.css("background-color", "blue");
+                    //     my_salvo.html(s.turn);
+                    // }
+                    // if (s.gamePlayer_id != pageId ){
+                    //     var missed = $("#"+lo);
+                    //     $(missed).css("background-color", "aquamarine");
+                    //     $(missed).html(s.turn)
+                    //     if (lo == $(one_cell).attr("id")){
+                    //         //don't do the following with divs, make a class "ship" instead
+                    //         // var hit = $("<div>").attr("class", "hit");
+                    //         // $(hit).html(s.turn);
+                    //         // $(one_cell).append(hit);
+                    //         $(one_cell).attr("class", "hit");
+                    //         $(one_cell).html(s.turn);
+                    //     }
+                    // }
+                })
+            });
+        }
+
     });
+}
+// following:  function to be called above, to show the current player's salvoes
+    function show_my_missed(location, salvo){
+        var my_salvo = $("#salvo_cell"+location);
+        my_salvo.css("background-color", "blue");
+        my_salvo.html(salvo.turn);
+    }
+//following: function to be called above, to show the current player's opponent's hits and miss
+    function show_missed_and_hits (location, salvo, one_cell) {
+        var missed = $("#"+location);
+        $(missed).css("background-color", "aquamarine");
+        $(missed).html(salvo.turn)
+        if (location == $(one_cell).attr("id")){
+            $(one_cell).attr("class", "hit");
+            $(one_cell).html(salvo.turn);
+    }
 
     // salvoes_array.forEach(function(ms){
     //     if(ms.gamePlayer_id == pageId){
@@ -175,7 +227,7 @@ function get_coordinates(coord, salvoes_array){
 
 
 
-//FOLLOWING: ADD CURRENT PLAYER + OPPONENT
+//FOLLOWING: ADD CURRENT PLAYER + OPPONENT TO THE HEADER ABOVE THE GRID
 function getPlayers(array){
     array.forEach(function(gp){
         if(gp.id == pageId){
@@ -349,7 +401,7 @@ function makeLeaderboard(array) {
 }
 
 // now the function to place the ships; it sends the JSON to the backend
-let ships =[{type: "patrol boat", locations: ["A1", "B1"]}, {type: "carrier", locations: ["B1", "B2", "B3", "B4", "B5"]}, {type: "destroyer",
+let ships =[{type: "patrol boat", locations: ["A1", "A2"]}, {type: "carrier", locations: ["B1", "B2", "B3", "B4", "B5"]}, {type: "destroyer",
     locations:["C1", "C2", "C3"]}];
 
 $("#ship_placer").click(function(){
@@ -358,24 +410,25 @@ $("#ship_placer").click(function(){
 })
 
 function save_ships(){
+    //location.reload();
     //why doesn't the following line work? be because i need to specify the data type
     // $.post("/api/games/players/" + pageId + "/ships", JSON.stringify([{type: "patrol boat", location: ["A1", "A2"]}]))
-    $.post({
+    //here an .ajax method to obtain the same as with .post
+    $.ajax({
         url: "/api/games/players/" + pageId + "/ships",
+        method: "POST",
         data: JSON.stringify(ships),
-        dataType: "text",
-        contentType: "application/json"
+        dataType: "json",
+        contentType: "application/json",
+        success: function () {
+            alert("Ships");
+            //reload AFTER the success!
+            location.reload();
+        },
+        error: function(response) {
+            alert("ERROR! " + response.responseText);
+        }
+
     })
-        .done(function(){
-            alert("ships placed!");
-        })
-        .fail(function(response){
-            if (current_user ==  ""){
-                alert("LOG IN BEFORE PLACING SHIPS!")
-            }
-            else{
-                alert("ERROR!" + response.responseText);
-            }
-        })
 }
 

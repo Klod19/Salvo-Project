@@ -1,0 +1,7 @@
+[
+  {"type": "Carrier", "blocks": 5},
+  {"type": "Battleship", "blocks": 4},
+  {"type": "Destroyer", "blocks": 3},
+  {"type": "Submarine", "blocks": 3},
+  {"type": "Patrol Boat", "blocks": 2}
+]
