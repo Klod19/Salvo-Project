@@ -432,3 +432,58 @@ function save_ships(){
     })
 }
 
+function doAlign() {
+    $(".blocks_container").css({"flex-direction" : "column"});
+}
+
+$("#align").click(function(){
+    doAlign();
+});
+
+
+$("#table-rows").on("click","td", function(e){
+    //check if there is a grey td on the table --> if not, make one; if yes, here enters the following stuff
+    //the following: loops through the table rows; for each rows finds its descendants with ".find()";
+    // $('#table-rows tr').each(function(){
+    //     $(this).find('td').each(function(){
+    //        if (! $(this).css("backcground-color") == "rgb(128, 128, 128)"){
+    //            console.log("grey checker");
+    //        }
+    //     })
+    // })
+    var table = $("#gameTable");
+    for (var i = 0, cell; cell = table.cells[i]; i++) {
+        //iterate through cells
+        //cells would be accessed using the "cell" variable assigned in the for loop
+        if(! cell.css("background-color") == "rgb(128, 128, 128)"){
+            console.log("grey checker")
+        }
+    }
+
+
+    //first check if the clicked td is grey --> if so make it white; otherwise make it grey;
+    if ($(this).css("background-color") == "rgb(128, 128, 128)"){
+        console.log("true");
+        $(this).css({"background-color": "white"});
+        console.log(this);
+    }
+    else{
+        $(this).css("background-color", "grey");
+    }
+
+
+    // var parent = e.target.parentElement;
+    // var id = $(parent).attr("id");
+    let string = $(this).attr("id");
+    if (string.length == 2){
+        var x = string.split("")[1].toString();
+    }
+    else{
+        var x = string.split("")[1].toString() + string.split("")[2].toString();
+    }
+    console.log(x);
+    // if (x )
+    // $(this).css({"background-color" : "grey"});
+
+
+})
