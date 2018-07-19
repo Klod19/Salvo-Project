@@ -83,6 +83,10 @@ var allShips =[];
 var loc_array=[];
 var gamePlayers =[];
 var salvoesArray =[];
+// following: a boolean place_condition, to allow the grid to be highlighted, which will allow positioning
+let place_condition = false
+//following: an empty array to be filled according to the number of pieces a ship as
+let blocks_array = [];
 
 // array of objects to make a list of ships to be placed:
 const ships_to_place = [
@@ -93,13 +97,16 @@ const ships_to_place = [
     {type: "Patrol Boat", blocks: 2}
 ];
 
+//go through the array, work on the single array element(which is an object) with the function makeButtons
 ships_to_place.map(obj => makeButtons(obj));
 
 function makeButtons (object){
-   let info_container = $("<div>").attr({class: "info_container"});
+   let info_container = $("<div>").attr({class: "info_container", name: object.blocks});
    let div_type = $("<div>").html(object.type);
    info_container.append(div_type);
    let blocks_container = $("<div>").attr({class: "blocks_container"});
+   console.log(object.blocks);
+   console.log(object.type);
    for (let i = 0; i < object.blocks; i++){
        let div_block = $("<div>").attr({class: "ship_blocks", id: object.type + "_block_" + i });
        blocks_container.append(div_block);
@@ -109,9 +116,33 @@ function makeButtons (object){
 
 }
 
-$(".info_container").click(function(){
-    $(this).toggleClass("activate");
 
+$(".info_container").click(function(){
+    //STILL TO DO: make this div active ONLY if others are not active
+    $(this).toggleClass("activate");
+    let ship_length = $(this).attr("name");
+    place_condition = !place_condition;
+    //make an array, as long as the the ship is; first, empty the array, then fill it according to the ship "length"
+    blocks_array = [];
+    for (let i=0 ; i < ship_length; i++){
+        blocks_array.push("bl");
+    }
+    console.log(blocks_array);
+
+    //highlight with orange the cells where it's possible to place a ship, unless the cell is grey;
+    //on second click, make the cells white again, except for those that are grey
+    $(".table_cells").each(function(){
+        let cell_color = $(this).css("background-color");
+        console.log(cell_color);
+        if(place_condition == true && cell_color != "rgb(128, 128, 128)"){
+            $(this).css("background-color", "orange");
+        }
+        else{
+            if(cell_color != "rgb(128, 128, 128)" ){
+                $(this).css("background-color", "white");
+            }
+        }
+    })
 });
 
 $.ajax("/api/game_view/" + pageId).done(function(data){
@@ -432,43 +463,27 @@ function save_ships(){
     })
 }
 
-function doAlign() {
-    $(".blocks_container").css({"flex-direction" : "column"});
-}
-
-$("#align").click(function(){
-    doAlign();
-});
-
-
 $("#table-rows").on("click","td", function(e){
-    //check if there is a grey td on the table --> if not, make one; if yes, here enters the following stuff
-    //the following: loops through the table rows; for each rows finds its descendants with ".find()";
-    // $('#table-rows tr').each(function(){
-    //     $(this).find('td').each(function(){
-    //        if (! $(this).css("backcground-color") == "rgb(128, 128, 128)"){
-    //            console.log("grey checker");
-    //        }
-    //     })
-    // })
-    var table = $("#gameTable");
-    for (var i = 0, cell; cell = table.cells[i]; i++) {
-        //iterate through cells
-        //cells would be accessed using the "cell" variable assigned in the for loop
-        if(! cell.css("background-color") == "rgb(128, 128, 128)"){
-            console.log("grey checker")
+    console.log($(this).attr("id"));
+    console.log($(this).css("background-color"));
+    console.log("place_condition: " + place_condition)
+    let table = $("#gameTable");
+    // check if place_condition is true AND if there are actually elements in the blocks_array
+    if (place_condition == true && blocks_array.length > 0){
+        blocks_array.splice(0, 1);
+        console.log(blocks_array);
+        //if blocks_array.length == 0 : ask if user wants to place the ship
+        //first check if the clicked td is grey; if so, highlighted(orange); if so make it grey; otherwise do nothing
+        if ($(this).css("background-color") == "rgb(128, 128, 128)"){
+            $(this).css("background-color", "rgb(255, 165, 0)");
         }
-    }
-
-
-    //first check if the clicked td is grey --> if so make it white; otherwise make it grey;
-    if ($(this).css("background-color") == "rgb(128, 128, 128)"){
-        console.log("true");
-        $(this).css({"background-color": "white"});
-        console.log(this);
-    }
-    else{
-        $(this).css("background-color", "grey");
+        else{
+            $(this).css("background-color", "rgb(128, 128, 128)");
+            if(blocks_array.length == 0 && $(this).css("background-color") == "rgb(128, 128, 128)"){
+                //ISSUE! the alert is shown BEFORE the cells becomes grey
+                alert("do you want to place this ship?")
+            }
+        }
     }
 
 
