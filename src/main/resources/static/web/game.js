@@ -466,39 +466,63 @@ function save_ships(){
 $("#table-rows").on("click","td", function(e){
     console.log($(this).attr("id"));
     console.log($(this).css("background-color"));
-    console.log("place_condition: " + place_condition)
+    console.log("place_condition: " + place_condition);
     let table = $("#gameTable");
-    // check if place_condition is true AND if there are actually elements in the blocks_array
-    if (place_condition == true && blocks_array.length > 0){
-        blocks_array.splice(0, 1);
-        console.log(blocks_array);
-        //if blocks_array.length == 0 : ask if user wants to place the ship
-        //first check if the clicked td is grey; if so, highlighted(orange); if so make it grey; otherwise do nothing
-        if ($(this).css("background-color") == "rgb(128, 128, 128)"){
-            $(this).css("background-color", "rgb(255, 165, 0)");
-        }
-        else{
-            $(this).css("background-color", "rgb(128, 128, 128)");
-            if(blocks_array.length == 0 && $(this).css("background-color") == "rgb(128, 128, 128)"){
-                //ISSUE! the alert is shown BEFORE the cells becomes grey
-                alert("do you want to place this ship?")
-            }
-        }
-    }
 
-
-    // var parent = e.target.parentElement;
-    // var id = $(parent).attr("id");
+    //get the coordinates of the clicked cell, in order to later highlight the legal cells around it
     let string = $(this).attr("id");
+    let y = string.split("")[0];
+    let x="";
     if (string.length == 2){
-        var x = string.split("")[1].toString();
+        // x = string.split("")[1].toString();
+        x = parseInt(string.split("")[1]);
     }
     else{
-        var x = string.split("")[1].toString() + string.split("")[2].toString();
+        // x = string.split("")[1].toString() + string.split("")[2].toString();
+        x = parseInt(string.split("")[1] + string.split("")[2]);
     }
-    console.log(x);
-    // if (x )
-    // $(this).css({"background-color" : "grey"});
+    console.log("y: " + y);
+    console.log("x: " + x);
+    console.log(ltrs_array.indexOf(y)+1);
+    let newY = ltrs_array.indexOf(y);
+    console.log(ltrs_array[newY + 1]);
+    console.log(ltrs_array[newY - 1]);
+
+    //check if there is already one grey cell; if so, place ONLY close to it, by coloring only the adjacent legal spaces with grey
+    //otherwise,place everywhere (MAKE AN EXTERNAL FUNCTION FOR IT; MAKE A BOOLEAN TO CHECK IT
+
+    // it's better to make this loop just to check if there is a grey square, with a boolean
+    $(".table_cells").each(function(){
+
+        if( $(this).css("background-color") == "rgb(128, 128, 128)"){
+            $("#"+y+(x-1)).css("background-color", "yellow");
+            $("#"+y+(x+1)).css("background-color", "yellow");
+        }
+    });
+    // check if place_condition is true AND if there are actually elements in the blocks_array; check if the clicked cell is grey, so to undo it back to orange
+    if ((place_condition == true && blocks_array.length > 0) || $(this).css("background-color") == "rgb(128, 128, 128)"){
+
+            if ($(this).css("background-color") == "rgb(128, 128, 128)"){
+                //make the cell back to orange AND refill the blocks-array of 1 element
+                $(this).css("background-color", "rgb(255, 165, 0)");
+                blocks_array.push("bl");
+                console.log(blocks_array);
+            }
+            else{
+                //make the cell grey AND splice 1 element; afterwards, check if the array is empty and the clicked cell is grey; if so, alert for placing
+                $(this).css("background-color", "rgb(128, 128, 128)");
+                blocks_array.splice(0, 1);
+                if(blocks_array.length == 0 /*&& $(this).css("background-color") == "rgb(128, 128, 128)"*/){
+                    //ISSUE! the alert is shown BEFORE the cells becomes grey
+                    alert("do you want to place this ship?")
+                }
+            }
+    }
 
 
-})
+    console.log(blocks_array);
+    //if blocks_array.length == 0 : ask if user wants to place the ship
+
+
+});
+
